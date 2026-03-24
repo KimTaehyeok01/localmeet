@@ -147,6 +147,11 @@ public class MeetingService {
     @Transactional(readOnly = true)
     public List<MeetingResponseDto> searchByAddress(String keyword) {
         List<Meeting> list = meetingRepository.findAllByMeetingAddressContainingOrderByCreatedAtDesc(keyword);
-        return list.stream().map(MeetingResponseDto::new).collect(Collectors.toList());
+        return list.stream().map(meeting -> {
+            MeetingResponseDto dto = new MeetingResponseDto(meeting);
+            int count = meetingMemberRepository.countByMeeting_MeetingIdx(meeting.getMeetingIdx());
+            dto.setCurrentCount(count);
+            return dto;
+        }).collect(Collectors.toList());
     }
 }
