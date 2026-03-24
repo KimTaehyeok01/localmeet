@@ -1,5 +1,6 @@
 package com.study.localmeet.config;
 
+import com.study.localmeet.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,8 @@ import java.util.Collections;
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -32,36 +35,38 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable());
 
         http
                 .authorizeHttpRequests(authz -> authz
-                        // 인증 없이 접근 허용
                         .requestMatchers(
-                                "/",
-                                "/api/auth/**",        // 회원가입, 로그인
-                                "/view/**",            // 타임리프 페이지
-                                "/css/**", "/js/**", "/images/**",  // 정적 파일
-                                "/ws/**"               // WebSocket 엔드포인트
+                                "/", "/view/**",
+                                "/api/auth/**",
+                                "/css/**", "/js/**", "/images/**",
+                                "/ws/**",
+                                "/login/oauth2/**", "/oauth2/**"
                         ).permitAll()
-                        // 관리자만 접근
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 );
 
-        // JWT 기반 -> 세션 사용 안 함 (Ex17JWT와 동일)
         http.sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         );
 
-        // JWT 필터 등록 (Ex17JWT와 동일)
         http.addFilterBefore(
                 new JwtAuthenticationFilter(jwtUtil),
                 UsernamePasswordAuthenticationFilter.class
+        );
+
+        http.oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(userInfo -> userInfo
+                        .userService(customOAuth2UserService)
+                )
+                .successHandler(oAuth2SuccessHandler)
+                .failureUrl("/view/login?error=true")
         );
 
         return http.build();
@@ -74,7 +79,6 @@ public class SecurityConfig {
         config.setAllowedMethods(Collections.singletonList("*"));
         config.setAllowedOriginPatterns(Collections.singletonList("*"));
         config.setAllowCredentials(true);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;

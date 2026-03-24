@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -60,5 +61,11 @@ public class ViewController {
         model.addAttribute("dto", meetingService.findById(meetingIdx));
         model.addAttribute("kakaoMapApiKey", kakaoMapApiKey);
         return "meeting/updateForm";
+    }
+
+    @GetMapping("/view/oauth2/success")
+    public String oauth2Success(@RequestParam String token, Model model) {
+        model.addAttribute("token", token);
+        return "auth/oauth2Success";
     }
 }
