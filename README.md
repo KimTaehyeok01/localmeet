@@ -75,7 +75,6 @@ JWT 인증, WebSocket 실시간 채팅, SSE 알림, 카카오맵 API, 소셜 로
 <br>
 
 ## 📐 아키텍처
-
 ```
 [Thymeleaf + JS] ──REST API──▶ [Spring Boot]
                                       │
@@ -90,7 +89,6 @@ JWT 인증, WebSocket 실시간 채팅, SSE 알림, 카카오맵 API, 소셜 로
 <br>
 
 ## 📦 패키지 구조
-
 ```
 src/main/java/com/study/localmeet/
 ├── config/         # Security, JWT, WebSocket, QueryDSL 설정
@@ -108,13 +106,54 @@ src/main/java/com/study/localmeet/
 <br>
 
 ## 🗄️ ERD
+```mermaid
+erDiagram
+    USERS {
+        BIGINT user_idx PK
+        VARCHAR user_email UK
+        VARCHAR user_password
+        VARCHAR user_nickname UK
+        VARCHAR user_role
+        VARCHAR user_address
+        DOUBLE user_lat
+        DOUBLE user_lng
+        DATETIME created_at
+    }
 
-```
-Users ──────────────── Meeting
-  │                      │
-  │               MeetingMember (중간 테이블)
-  │                      │
-  └────────────── ChatMessage
+    MEETING {
+        BIGINT meeting_idx PK
+        VARCHAR meeting_title
+        TEXT meeting_content
+        VARCHAR meeting_address
+        DOUBLE meeting_lat
+        DOUBLE meeting_lng
+        INT meeting_max
+        VARCHAR meeting_status
+        DATETIME created_at
+        BIGINT user_idx FK
+    }
+
+    MEETING_MEMBER {
+        BIGINT mm_idx PK
+        BIGINT meeting_idx FK
+        BIGINT user_idx FK
+        TINYINT is_approved
+        DATETIME joined_at
+    }
+
+    CHAT_MESSAGE {
+        BIGINT chat_idx PK
+        BIGINT meeting_idx FK
+        BIGINT user_idx FK
+        TEXT chat_content
+        DATETIME created_at
+    }
+
+    USERS ||--o{ MEETING : "작성"
+    USERS ||--o{ MEETING_MEMBER : "참가 신청"
+    USERS ||--o{ CHAT_MESSAGE : "전송"
+    MEETING ||--o{ MEETING_MEMBER : "포함"
+    MEETING ||--o{ CHAT_MESSAGE : "포함"
 ```
 
 |테이블           |설명                          |
@@ -129,13 +168,11 @@ Users ──────────────── Meeting
 ## ⚙️ 실행 방법
 
 ### 1. MySQL 데이터베이스 생성
-
 ```sql
 CREATE DATABASE localmeet CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 ### 2. application.properties 설정
-
 ```properties
 spring.datasource.username=root
 spring.datasource.password=본인_비밀번호
@@ -150,13 +187,11 @@ spring.security.oauth2.client.registration.google.client-secret=구글_클라이
 ```
 
 ### 3. 실행
-
 ```bash
 ./gradlew bootRun
 ```
 
 ### 4. 접속
-
 ```
 http://localhost:8080
 ```
