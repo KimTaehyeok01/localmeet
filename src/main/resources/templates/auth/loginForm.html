@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인 - LocalMeet</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- 네비게이션 -->
+<nav class="navbar">
+  <a class="navbar-brand" href="/view/meetings">Local<span>Meet</span></a>
+</nav>
+
+<div class="container-sm">
+  <div class="auth-card">
+    <div class="auth-title">다시 만나요 👋</div>
+    <div class="auth-subtitle">LocalMeet에 로그인하세요</div>
+
+    <div class="form-group">
+      <label class="form-label">이메일</label>
+      <input type="email" id="userEmail" class="form-control" placeholder="이메일 입력">
+    </div>
+    <div class="form-group">
+      <label class="form-label">비밀번호</label>
+      <input type="password" id="userPassword" class="form-control" placeholder="비밀번호 입력">
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="login()">로그인</button>
+
+    <div class="auth-footer">
+      계정이 없으신가요? <a href="/view/signup">회원가입</a>
+    </div>
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+  // 이미 로그인된 경우 이동
+  if (localStorage.getItem('JWT_TOKEN')) location.href = '/view/meetings';
+
+  function showToast(msg, type = '') {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  // Enter 키 로그인
+  document.addEventListener('keypress', e => { if (e.key === 'Enter') login(); });
+
+  function login() {
+    const userEmail    = document.getElementById('userEmail').value.trim();
+    const userPassword = document.getElementById('userPassword').value;
+    if (!userEmail || !userPassword) { showToast('이메일과 비밀번호를 입력해주세요.', 'error'); return; }
+
+    fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `userEmail=${encodeURIComponent(userEmail)}&userPassword=${encodeURIComponent(userPassword)}`
+    })
+    .then(res => res.text())
+    .then(token => {
+      if (token.startsWith('로그인 실패')) {
+        showToast(token, 'error');
+      } else {
+        localStorage.setItem('JWT_TOKEN', token);
+        showToast('로그인 성공!', 'success');
+        setTimeout(() => location.href = '/view/meetings', 500);
+      }
+    })
+    .catch(() => showToast('서버 오류가 발생했습니다.', 'error'));
+  }
+</script>
+</body>
+</html>
