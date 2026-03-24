@@ -118,7 +118,10 @@
 
   function joinMeeting() {
     fetch(`/api/meetings/${meetingIdx}/join`, { method:'POST', headers:{'JWT_TOKEN':token} })
-    .then(r => r.text()).then(msg => showToast(msg, 'success'));
+    .then(r => r.text()).then(msg => {
+      showToast(msg, 'success');
+      setTimeout(() => location.reload(), 1000);
+    });
   }
 
   function deleteMeeting() {
