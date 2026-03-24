@@ -2,8 +2,10 @@
 -- LocalMeet DB 초기화 SQL
 -- ================================
 
--- 데이터베이스 생성
-CREATE DATABASE IF NOT EXISTS localmeet
+-- 기존 DB 완전 삭제 후 재생성
+DROP DATABASE IF EXISTS localmeet;
+
+CREATE DATABASE localmeet
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
@@ -12,7 +14,7 @@ USE localmeet;
 -- ================================
 -- 1. 회원 테이블
 -- ================================
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE users (
     user_idx      BIGINT          NOT NULL AUTO_INCREMENT,
     user_email    VARCHAR(100)    NOT NULL UNIQUE,
     user_password VARCHAR(255)    NOT NULL,
@@ -28,7 +30,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- ================================
 -- 2. 모임 테이블
 -- ================================
-CREATE TABLE IF NOT EXISTS meeting (
+CREATE TABLE meeting (
     meeting_idx     BIGINT          NOT NULL AUTO_INCREMENT,
     meeting_title   VARCHAR(100)    NOT NULL,
     meeting_content TEXT            NOT NULL,
@@ -46,7 +48,7 @@ CREATE TABLE IF NOT EXISTS meeting (
 -- ================================
 -- 3. 모임 참가자 테이블
 -- ================================
-CREATE TABLE IF NOT EXISTS meeting_member (
+CREATE TABLE meeting_member (
     mm_idx      BIGINT      NOT NULL AUTO_INCREMENT,
     meeting_idx BIGINT      NOT NULL,
     user_idx    BIGINT      NOT NULL,
@@ -60,7 +62,7 @@ CREATE TABLE IF NOT EXISTS meeting_member (
 -- ================================
 -- 4. 채팅 메시지 테이블
 -- ================================
-CREATE TABLE IF NOT EXISTS chat_message (
+CREATE TABLE chat_message (
     chat_idx     BIGINT   NOT NULL AUTO_INCREMENT,
     meeting_idx  BIGINT   NOT NULL,
     user_idx     BIGINT   NOT NULL,
@@ -93,3 +95,5 @@ INSERT INTO meeting_member (meeting_idx, user_idx, is_approved, joined_at)
 VALUES
     (1, 2, 1, NOW()),
     (2, 2, 0, NOW());
+
+UPDATE users SET user_role = 'ROLE_ADMIN' WHERE user_email = 'taehyeok1124@gmail.com';
