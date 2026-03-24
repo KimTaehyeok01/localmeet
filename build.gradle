@@ -24,6 +24,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
     // Spring Boot 기본
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
