@@ -1,5 +1,6 @@
 package com.study.localmeet.service;
 
+import com.study.localmeet.domain.chat.ChatMessageRepository;
 import com.study.localmeet.domain.meeting.Meeting;
 import com.study.localmeet.domain.meeting.MeetingRepository;
 import com.study.localmeet.domain.meetingmember.MeetingMember;
@@ -22,6 +23,7 @@ public class MeetingService {
 
     private final MeetingRepository meetingRepository;
     private final MeetingMemberRepository meetingMemberRepository;
+    private final ChatMessageRepository chatMessageRepository;
     private final UsersRepository usersRepository;
 
     // 전체 모임 목록 조회
@@ -30,7 +32,7 @@ public class MeetingService {
         List<Meeting> list = meetingRepository.findAllByOrderByCreatedAtDesc();
         return list.stream().map(meeting -> {
             MeetingResponseDto dto = new MeetingResponseDto(meeting);
-            int count = meetingMemberRepository.countByMeeting_MeetingIdxAndIsApproved(meeting.getMeetingIdx(), true);
+            int count = meetingMemberRepository.countByMeeting_MeetingIdx(meeting.getMeetingIdx());
             dto.setCurrentCount(count);
             return dto;
         }).collect(Collectors.toList());
@@ -42,7 +44,7 @@ public class MeetingService {
         Meeting entity = meetingRepository.findById(meetingIdx)
                 .orElseThrow(() -> new IllegalArgumentException("없는 모임입니다."));
         MeetingResponseDto dto = new MeetingResponseDto(entity);
-        int count = meetingMemberRepository.countByMeeting_MeetingIdxAndIsApproved(meetingIdx, true);
+        int count = meetingMemberRepository.countByMeeting_MeetingIdx(meetingIdx);
         dto.setCurrentCount(count);
         return dto;
     }
@@ -82,6 +84,12 @@ public class MeetingService {
         if (!entity.getUsers().getUserEmail().equals(userEmail)) {
             throw new IllegalArgumentException("삭제 권한이 없습니다.");
         }
+
+        // 자식 데이터 먼저 삭제 (FK 제약조건)
+        chatMessageRepository.deleteAll(
+                chatMessageRepository.findAllByMeeting_MeetingIdxOrderByCreatedAtAsc(meetingIdx));
+        meetingMemberRepository.deleteAll(
+                meetingMemberRepository.findAllByMeeting_MeetingIdx(meetingIdx));
 
         meetingRepository.delete(entity);
     }

@@ -10,6 +10,9 @@ public interface MeetingMemberRepository extends JpaRepository<MeetingMember, Lo
     // 모임별 참가자 목록 조회
     List<MeetingMember> findAllByMeeting_MeetingIdx(Long meetingIdx);
 
+    // 모임별 전체 신청자 수 (승인 여부 무관)
+    int countByMeeting_MeetingIdx(Long meetingIdx);
+
     // 모임별 승인된 참가자 수 조회
     int countByMeeting_MeetingIdxAndIsApproved(Long meetingIdx, Boolean isApproved);
 
