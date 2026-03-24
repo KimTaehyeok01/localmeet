@@ -3,6 +3,7 @@ package com.study.localmeet.controller;
 import com.study.localmeet.service.MeetingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -67,5 +68,11 @@ public class ViewController {
     public String oauth2Success(@RequestParam String token, Model model) {
         model.addAttribute("token", token);
         return "auth/oauth2Success";
+    }
+
+    @GetMapping("/view/admin")
+    @Secured("ROLE_ADMIN")
+    public String adminPage() {
+        return "admin/adminPage";
     }
 }

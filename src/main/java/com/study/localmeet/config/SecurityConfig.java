@@ -42,14 +42,15 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
-                                "/", "/view/**",
+                                "/", "/view/login", "/view/signup", "/view/meetings",
+                                "/view/meetings/**", "/view/oauth2/**",
                                 "/api/auth/**",
                                 "/api/meetings", "/api/meetings/**",
                                 "/css/**", "/js/**", "/images/**",
                                 "/ws/**",
                                 "/login/oauth2/**", "/oauth2/**"
                         ).permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/view/admin", "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );
 
