@@ -83,7 +83,7 @@
   } else {
     navMenu.innerHTML += `<a href="/view/login">로그인</a>`;
   }
-  function doLogout() { localStorage.removeItem('JWT_TOKEN'); location.href='/view/login'; }
+  function doLogout() { localStorage.removeItem('JWT_TOKEN'); document.cookie = 'JWT_TOKEN=; path=/; max-age=0'; location.href='/view/login'; }
 
   // 배지 상태
   const badge = document.getElementById('statusBadge');

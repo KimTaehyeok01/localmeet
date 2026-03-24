@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,9 +69,17 @@ public class JwtUtil {
                 userDetails, "", userDetails.getAuthorities());
     }
 
-    // Request 헤더에서 토큰 추출 ("JWT_TOKEN" : "토큰값")
+    // Request 헤더 또는 쿠키에서 토큰 추출
     public String resolveToken(HttpServletRequest request) {
-        return request.getHeader("JWT_TOKEN");
+        String header = request.getHeader("JWT_TOKEN");
+        if (header != null) return header;
+
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("JWT_TOKEN".equals(cookie.getName())) return cookie.getValue();
+            }
+        }
+        return null;
     }
 
     // 토큰 유효성 + 만료일자 확인
