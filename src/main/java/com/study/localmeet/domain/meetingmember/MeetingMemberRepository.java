@@ -24,4 +24,7 @@ public interface MeetingMemberRepository extends JpaRepository<MeetingMember, Lo
 
     // 유저별 참가 모임 목록 조회
     List<MeetingMember> findAllByUsers_UserIdxAndIsApproved(Long userIdx, Boolean isApproved);
+
+    // 특정 유저의 모든 참가 신청 삭제 (회원 탈퇴 시)
+    void deleteAllByUsers_UserIdx(Long userIdx);
 }
