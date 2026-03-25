@@ -1,0 +1,40 @@
+===========================
+LocalMeet 서버 실행 방법
+===========================
+
+1. SSH 접속
+ssh -i "C:/Users/taehy/Downloads/localmeet-key.pem" ubuntu@13.209.110.13
+
+2. 서버 실행
+nohup java -jar localmeet-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+
+3. 실행 확인 (Started LocalmeetApplication 뜨면 완료)
+tail -f app.log
+확인 후 Ctrl+C
+
+4. 접속 주소
+http://13.209.110.13:8080
+
+===========================
+코드 수정 후 재배포 방법
+===========================
+
+1. 로컬에서 빌드 (IntelliJ 터미널)
+cd "C:/Users/taehy/OneDrive/문서/GitHub/localmeet"
+./gradlew build -x test
+
+2. 서버에 업로드 (로컬 터미널)
+scp -i "C:/Users/taehy/Downloads/localmeet-key.pem" build/libs/localmeet-0.0.1-SNAPSHOT.jar ubuntu@13.209.110.13:/home/ubuntu/
+
+3. 서버 재실행 (서버 터미널)
+pkill -f localmeet
+nohup java -jar localmeet-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+
+===========================
+기타 정보
+===========================
+
+탄력적 IP: 13.209.110.13 (재시작해도 IP 고정)
+pem 파일 위치: C:/Users/taehy/Downloads/localmeet-key.pem
+DB 비밀번호: 비밀~
+관리자 계정: taehyeok1124@gmail.com (카카오 로그인)
