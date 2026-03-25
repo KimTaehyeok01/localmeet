@@ -10,6 +10,8 @@ LocalMeet은 위치 기반으로 동네 모임을 탐색하고 참가 신청할 
 Spring Boot와 Thymeleaf를 기반으로 REST API 방식으로 구현하였으며,  
 JWT 인증, WebSocket 실시간 채팅, SSE 알림, 카카오맵 API, 소셜 로그인 등 실무에서 자주 사용하는 기술들을 적용했습니다.
 
+🔗 **배포 주소**: http://13.209.110.13:8080
+
 <br>
 
 ## 🛠 기술 스택
@@ -18,7 +20,7 @@ JWT 인증, WebSocket 실시간 채팅, SSE 알림, 카카오맵 API, 소셜 로
 
 |기술               |버전    |
 |-----------------|------|
-|Java             |17    |
+|Java             |21    |
 |Spring Boot      |3.4.3 |
 |Spring Security  |6.x   |
 |Spring Data JPA  |-     |
@@ -41,6 +43,7 @@ JWT 인증, WebSocket 실시간 채팅, SSE 알림, 카카오맵 API, 소셜 로
 |기술       |설명       |
 |---------|---------|
 |MySQL 8.x|운영 데이터베이스|
+|AWS EC2  |Ubuntu 22.04 서버 배포|
 |Gradle   |빌드 도구    |
 
 <br>
@@ -50,7 +53,7 @@ JWT 인증, WebSocket 실시간 채팅, SSE 알림, 카카오맵 API, 소셜 로
 ### 👤 회원
 
 - 이메일 / 비밀번호 회원가입 및 로그인
-- 카카오 / 구글 소셜 로그인 (OAuth2)
+- 카카오 소셜 로그인 (OAuth2)
 - JWT 기반 인증 / 인가 (`ROLE_USER`, `ROLE_ADMIN`)
 - 마이페이지 (내 정보 조회)
 
@@ -72,6 +75,13 @@ JWT 인증, WebSocket 실시간 채팅, SSE 알림, 카카오맵 API, 소셜 로
 - SSE(Server-Sent Events) 기반 알림
 - 참가 신청 시 모임장에게 실시간 알림 전송
 
+### ⚙️ 관리자
+
+- 모임 전체 목록 조회 및 삭제
+- 모임 상태 변경 (모집중 / 모집완료 / 종료)
+- 회원 전체 목록 조회
+- 회원 강제 탈퇴
+
 <br>
 
 ## 📐 아키텍처
@@ -80,7 +90,7 @@ JWT 인증, WebSocket 실시간 채팅, SSE 알림, 카카오맵 API, 소셜 로
                                       │
               ┌───────────────────────┼────────────────────┐
        [Spring Security]        [WebSocket]            [외부 API]
-       JWT / OAuth2             STOMP Broker        카카오맵, 카카오·구글 OAuth2
+       JWT / OAuth2             STOMP Broker        카카오맵, 카카오 OAuth2
                                       │
                                [MySQL / JPA]
                                [QueryDSL]
@@ -181,9 +191,6 @@ kakao.map.api-key=카카오_JavaScript_키
 
 spring.security.oauth2.client.registration.kakao.client-id=카카오_REST_API_키
 spring.security.oauth2.client.registration.kakao.client-secret=카카오_Client_Secret
-
-spring.security.oauth2.client.registration.google.client-id=구글_클라이언트_ID
-spring.security.oauth2.client.registration.google.client-secret=구글_클라이언트_Secret
 ```
 
 ### 3. 실행
@@ -225,6 +232,11 @@ http://localhost:8080
 |GET   |/api/chat/{meetingIdx}       |채팅 내역 조회       |❌ |
 |GET   |/api/notifications/subscribe |SSE 알림 구독      |✅ |
 |WS    |/ws/chat                     |WebSocket 채팅 연결|- |
+|GET   |/api/admin/meetings          |모임 전체 조회 (관리자) |✅ |
+|DELETE|/api/admin/meetings/{id}     |모임 삭제 (관리자)    |✅ |
+|POST  |/api/admin/meetings/{id}/status|모임 상태 변경 (관리자)|✅ |
+|GET   |/api/admin/users             |회원 전체 조회 (관리자) |✅ |
+|DELETE|/api/admin/users/{id}        |회원 강제 탈퇴 (관리자) |✅ |
 
 <br>
 
@@ -241,3 +253,6 @@ http://localhost:8080
 
 **SSE 실시간 알림**  
 서버에서 클라이언트로 단방향 데이터를 전송하는 SSE를 활용해, 참가 신청 이벤트 발생 시 모임장에게 실시간 알림을 전송합니다.
+
+**관리자 기능**  
+`ROLE_ADMIN` 권한을 가진 사용자만 접근 가능한 관리자 페이지를 구현했습니다. 모든 모임과 회원을 관리할 수 있으며, JWT 토큰의 권한 정보를 파싱해 관리자 메뉴를 동적으로 표시합니다.
