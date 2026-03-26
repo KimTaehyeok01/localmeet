@@ -10,7 +10,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-// 회원가입 / 로그인 REST API (Ex17JWT ApiController 패턴과 동일)
+// 회원가입 / 로그인 REST API
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
