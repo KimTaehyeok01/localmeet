@@ -12,7 +12,7 @@ import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 
-// 모든 요청에서 JWT 토큰을 검사하는 필터 (Ex17JWT와 동일한 구조)
+// 모든 요청에서 JWT 토큰을 검사하는 필터
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends GenericFilterBean {
 

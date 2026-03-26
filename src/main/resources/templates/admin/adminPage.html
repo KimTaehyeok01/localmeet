@@ -213,7 +213,7 @@
 
   function deleteMeeting(meetingIdx) {
     if (!confirm('이 모임을 삭제하시겠습니까? 채팅 내역도 모두 삭제됩니다.')) return;
-    fetch(`/api/admin/meetings/${meetingIdx}/delete`, { headers })
+    fetch(`/api/admin/meetings/${meetingIdx}`, { method: 'DELETE', headers })
     .then(r => r.text())
     .then(res => {
       if (res === 'ok') { showToast('삭제되었습니다.', 'success'); loadMeetings(); }
@@ -221,9 +221,9 @@
     });
   }
 
-  function deleteUser(userIdx, nickname) {
+ function deleteUser(userIdx, nickname) {
     if (!confirm(`'${nickname}' 회원을 강제 탈퇴시키겠습니까?\n해당 회원의 모든 모임과 채팅이 삭제됩니다.`)) return;
-    fetch(`/api/admin/users/${userIdx}/delete`, { headers })
+    fetch(`/api/admin/users/${userIdx}`, { method: 'DELETE', headers })
     .then(r => r.text())
     .then(res => {
       if (res === 'ok') { showToast('탈퇴 처리되었습니다.', 'success'); loadUsers(); loadMeetings(); }
