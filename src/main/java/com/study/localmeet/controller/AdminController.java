@@ -24,7 +24,7 @@ public class AdminController {
     }
 
     // 회원 강제 탈퇴
-    @GetMapping("/users/{userIdx}/delete")
+    @DeleteMapping("/users/{userIdx}")
     public String deleteUser(@PathVariable Long userIdx) {
         try {
             adminService.deleteUser(userIdx);
@@ -41,7 +41,7 @@ public class AdminController {
     }
 
     // 모임 강제 삭제
-    @GetMapping("/meetings/{meetingIdx}/delete")
+    @DeleteMapping("/meetings/{meetingIdx}")
     public String deleteMeeting(@PathVariable Long meetingIdx) {
         try {
             adminService.deleteMeeting(meetingIdx);
