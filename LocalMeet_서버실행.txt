@@ -3,7 +3,7 @@ LocalMeet 서버 실행 방법
 ===========================
 
 1. SSH 접속
-ssh -i "C:/Users/taehy/Downloads/localmeet-key.pem" ubuntu@13.209.110.13
+ssh -i "C:/Key Pair/localmeet-key.pem" ubuntu@13.209.110.13
 
 2. 서버 실행
 nohup java -jar localmeet-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
