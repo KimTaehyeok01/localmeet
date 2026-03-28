@@ -33,7 +33,7 @@ public class JwtUtil {
 
     private final UserDetailsService userDetailsService;
 
-    // 의존주입 이후 secretKey를 Base64로 인코딩
+    // 주입 이후 secretKey를 Base64로 인코딩
     @PostConstruct
     protected void init() {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
@@ -95,7 +95,7 @@ public class JwtUtil {
         }
     }
 
-    // 토큰에서 이메일 추출 (WebSocket 인증에서 사용)
+    // 토큰에서 이메일 추출
     public String getEmail(String token) {
         return Jwts.parser()
                 .setSigningKey(secretKey)

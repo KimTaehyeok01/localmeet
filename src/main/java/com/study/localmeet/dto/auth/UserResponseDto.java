@@ -18,7 +18,7 @@ public class UserResponseDto {
     private Double userLng;
     private LocalDateTime createdAt;
 
-    // Entity -> DTO 변환 (기존 BoardResponseDto 패턴과 동일)
+    // Entity -> DTO 변환
     public UserResponseDto(Users entity) {
         this.userIdx = entity.getUserIdx();
         this.userEmail = entity.getUserEmail();

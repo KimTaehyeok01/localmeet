@@ -7,8 +7,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-// SSE(Server-Sent Events) 기반 실시간 알림 서비스
-// 서버 -> 클라이언트 단방향 push
+// SSE기반 실시간 알림 서비스
 @Service
 public class NotificationService {
 

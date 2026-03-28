@@ -23,7 +23,7 @@ public class MeetingResponseDto {
     private Long userIdx;
     private String userNickname;
 
-    // 현재 참가 인원 (Service에서 set)
+    // 현재 참가 인원
     private int currentCount;
 
     // Entity -> DTO 변환
