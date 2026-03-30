@@ -37,7 +37,6 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // jwt방식이라 세션은 필요 없음.
                 .csrf(csrf -> csrf.disable());
 
         http
