@@ -194,23 +194,7 @@ http://13.209.110.13:8080
 
 ## 🏗 시스템 아키텍처
 
-```
-[Thymeleaf + Vanilla JS]
-         │
-         │  REST API (JWT 헤더 포함)
-         ▼
-[Spring Boot 3.4.3]
-         │
- ┌───────┼───────────────┐
- │       │               │
-[Spring Security]  [WebSocket/STOMP]  [SSE]
-[JWT Filter]       [채팅 브로드캐스트]  [알림 전송]
-[OAuth2 Handler]
-         │
-  [Spring Data JPA + QueryDSL]
-         │
-     [MySQL 8]
-```
+![아키텍처 설계도](readme_assets/architecture.png)
 
 ---
 
