@@ -166,29 +166,7 @@ http://13.209.110.13:8080
 
 ## 📡 API 명세서
 
-| Method | URL | 설명 | 인증 |
-|--------|-----|------|------|
-| POST | `/api/auth/signup` | 회원가입 | ❌ |
-| POST | `/api/auth/login` | 로그인 (JWT 발급) | ❌ |
-| GET | `/api/auth/mypage` | 내 정보 조회 | ✅ |
-| GET | `/api/auth/check-email` | 이메일 중복 확인 | ❌ |
-| GET | `/api/auth/check-nickname` | 닉네임 중복 확인 | ❌ |
-| GET | `/api/meetings` | 모임 전체 목록 | ❌ |
-| POST | `/api/meetings` | 모임 등록 | ✅ |
-| GET | `/api/meetings/{id}` | 모임 상세 조회 | ❌ |
-| POST | `/api/meetings/{id}/update` | 모임 수정 | ✅ |
-| GET | `/api/meetings/{id}/delete` | 모임 삭제 | ✅ |
-| POST | `/api/meetings/{id}/join` | 참가 신청 | ✅ |
-| POST | `/api/meetings/approve/{mmIdx}` | 참가 승인 | ✅ |
-| GET | `/api/meetings/search?keyword=` | 동네 키워드 검색 | ❌ |
-| GET | `/api/chat/{meetingIdx}` | 채팅 내역 조회 | ❌ |
-| WS | `/ws/chat` | WebSocket 채팅 연결 | JWT 헤더 |
-| GET | `/api/notifications/subscribe` | SSE 알림 구독 | ✅ |
-| GET | `/api/admin/users` | 회원 전체 조회 (관리자) | ✅ |
-| DELETE | `/api/admin/users/{id}` | 회원 강제 탈퇴 (관리자) | ✅ |
-| GET | `/api/admin/meetings` | 모임 전체 조회 (관리자) | ✅ |
-| DELETE | `/api/admin/meetings/{id}` | 모임 삭제 (관리자) | ✅ |
-| POST | `/api/admin/meetings/{id}/status` | 모임 상태 변경 (관리자) | ✅ |
+![api 설계도](readme_assets/api명세서.png)
 
 ---
 
