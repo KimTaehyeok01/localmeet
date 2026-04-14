@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 페이지 - LocalMeet</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    .admin-tabs { display:flex; gap:8px; margin-bottom:24px; }
+    .admin-tab { padding:10px 24px; border:1px solid var(--gray-200); border-radius:8px; cursor:pointer; background:#fff; font-size:0.95rem; }
+    .admin-tab.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .admin-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+    .admin-table th { background:var(--gray-50); padding:10px 12px; text-align:left; border-bottom:2px solid var(--gray-200); }
+    .admin-table td { padding:10px 12px; border-bottom:1px solid var(--gray-100); vertical-align:middle; }
+    .admin-table tr:hover td { background:var(--gray-50); }
+    .badge-admin { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.78rem; font-weight:600; }
+    .badge-open { background:#e8f5e9; color:#2e7d32; }
+    .badge-full { background:#fff3e0; color:#e65100; }
+    .badge-closed { background:#fce4ec; color:#c62828; }
+    .badge-role-admin { background:#e3f2fd; color:#1565c0; }
+    .badge-role-user { background:var(--gray-100); color:var(--gray-600); }
+    .btn-sm { padding:4px 10px; font-size:0.8rem; border-radius:6px; border:none; cursor:pointer; }
+    .btn-danger-sm { background:#ffebee; color:#c62828; }
+    .btn-danger-sm:hover { background:#ef9a9a; }
+    .status-select { font-size:0.82rem; padding:3px 6px; border:1px solid var(--gray-200); border-radius:4px; }
+    .panel { display:none; }
+    .panel.active { display:block; }
+    .stat-row { display:flex; gap:16px; margin-bottom:24px; }
+    .stat-card { flex:1; background:#fff; border:1px solid var(--gray-200); border-radius:12px; padding:16px 20px; }
+    .stat-card .num { font-size:2rem; font-weight:700; color:var(--primary); }
+    .stat-card .label { font-size:0.85rem; color:var(--gray-400); margin-top:4px; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a class="navbar-brand" href="/view/meetings">Local<span>Meet</span></a>
+  <div class="navbar-menu">
+    <a href="/view/meetings">모임 목록</a>
+    <span style="color:var(--gray-400); font-size:0.85rem;">🔐 관리자</span>
+    <button onclick="doLogout()" style="background:none;border:none;cursor:pointer;color:var(--gray-600);font-size:0.9rem;">로그아웃</button>
+  </div>
+</nav>
+
+<div class="container" style="max-width:1100px;">
+  <div class="page-header">
+    <div>
+      <div class="page-title">관리자 페이지 🔐</div>
+      <div class="page-subtitle">모임 및 회원을 관리합니다</div>
+    </div>
+  </div>
+
+  <!-- 통계 -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="num" id="statMeetings">-</div>
+      <div class="label">전체 모임</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="statUsers">-</div>
+      <div class="label">전체 회원</div>
+    </div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="switchTab('meetings')">📋 모임 관리</button>
+    <button class="admin-tab" onclick="switchTab('users')">👥 회원 관리</button>
+  </div>
+
+  <!-- 모임 관리 패널 -->
+  <div id="panel-meetings" class="panel active">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>제목</th>
+          <th>작성자</th>
+          <th>주소</th>
+          <th>인원</th>
+          <th>상태</th>
+          <th>등록일</th>
+          <th>관리</th>
+        </tr>
+      </thead>
+      <tbody id="meetingTableBody">
+        <tr><td colspan="8" style="text-align:center;color:var(--gray-400);">불러오는 중...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 회원 관리 패널 -->
+  <div id="panel-users" class="panel">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>이메일</th>
+          <th>닉네임</th>
+          <th>권한</th>
+          <th>주소</th>
+          <th>가입일</th>
+          <th>관리</th>
+        </tr>
+      </thead>
+      <tbody id="userTableBody">
+        <tr><td colspan="7" style="text-align:center;color:var(--gray-400);">불러오는 중...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+  const token = localStorage.getItem('JWT_TOKEN');
+  if (!token) { location.href = '/view/login'; }
+
+  function doLogout() { localStorage.removeItem('JWT_TOKEN'); location.href = '/view/login'; }
+
+  function showToast(msg, type = '') {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div'); t.className = 'toast ' + type; t.textContent = msg; c.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.admin-tab').forEach((el, i) => {
+      el.classList.toggle('active', (i === 0 && tab === 'meetings') || (i === 1 && tab === 'users'));
+    });
+    document.getElementById('panel-meetings').classList.toggle('active', tab === 'meetings');
+    document.getElementById('panel-users').classList.toggle('active', tab === 'users');
+  }
+
+  const headers = { 'JWT_TOKEN': token };
+
+  // 모임 목록 로드
+  function loadMeetings() {
+    fetch('/api/admin/meetings', { headers })
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('statMeetings').textContent = data.length;
+      const tbody = document.getElementById('meetingTableBody');
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--gray-400);">모임이 없습니다.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(m => {
+        const badgeClass = m.meetingStatus === 'OPEN' ? 'badge-open' : (m.meetingStatus === 'FULL' ? 'badge-full' : 'badge-closed');
+        const statusText = m.meetingStatus === 'OPEN' ? '모집중' : (m.meetingStatus === 'FULL' ? '모집완료' : '종료');
+        const date = m.createdAt ? m.createdAt.substring(0, 10) : '';
+        return `<tr>
+          <td>${m.meetingIdx}</td>
+          <td><a href="/view/meetings/${m.meetingIdx}" style="color:var(--primary)">${m.meetingTitle}</a></td>
+          <td>${m.userNickname}</td>
+          <td>${m.meetingAddress || '-'}</td>
+          <td>${m.currentCount} / ${m.meetingMax}</td>
+          <td>
+            <select class="status-select" onchange="changeStatus(${m.meetingIdx}, this.value)">
+              <option value="OPEN" ${m.meetingStatus === 'OPEN' ? 'selected' : ''}>모집중</option>
+              <option value="FULL" ${m.meetingStatus === 'FULL' ? 'selected' : ''}>모집완료</option>
+              <option value="CLOSED" ${m.meetingStatus === 'CLOSED' ? 'selected' : ''}>종료</option>
+            </select>
+          </td>
+          <td>${date}</td>
+          <td><button class="btn-sm btn-danger-sm" onclick="deleteMeeting(${m.meetingIdx})">삭제</button></td>
+        </tr>`;
+      }).join('');
+    })
+    .catch(() => showToast('모임 목록 로드 실패 (권한 확인)', 'error'));
+  }
+
+  // 회원 목록 로드
+  function loadUsers() {
+    fetch('/api/admin/users', { headers })
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('statUsers').textContent = data.length;
+      const tbody = document.getElementById('userTableBody');
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--gray-400);">회원이 없습니다.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.map(u => {
+        const roleClass = u.userRole === 'ROLE_ADMIN' ? 'badge-role-admin' : 'badge-role-user';
+        const roleText = u.userRole === 'ROLE_ADMIN' ? '관리자' : '일반';
+        const date = u.createdAt ? u.createdAt.substring(0, 10) : '';
+        const deleteBtn = u.userRole !== 'ROLE_ADMIN'
+          ? `<button class="btn-sm btn-danger-sm" onclick="deleteUser(${u.userIdx}, '${u.userNickname}')">탈퇴</button>`
+          : `<span style="color:var(--gray-300);font-size:0.8rem;">보호됨</span>`;
+        return `<tr>
+          <td>${u.userIdx}</td>
+          <td>${u.userEmail}</td>
+          <td>${u.userNickname}</td>
+          <td><span class="badge-admin ${roleClass}">${roleText}</span></td>
+          <td>${u.userAddress || '-'}</td>
+          <td>${date}</td>
+          <td>${deleteBtn}</td>
+        </tr>`;
+      }).join('');
+    })
+    .catch(() => showToast('회원 목록 로드 실패 (권한 확인)', 'error'));
+  }
+
+  function changeStatus(meetingIdx, status) {
+    fetch(`/api/admin/meetings/${meetingIdx}/status?status=${status}`, { method: 'POST', headers })
+    .then(r => r.text())
+    .then(res => {
+      if (res === 'ok') showToast('상태가 변경되었습니다.', 'success');
+      else showToast(res, 'error');
+    });
+  }
+
+  function deleteMeeting(meetingIdx) {
+    if (!confirm('이 모임을 삭제하시겠습니까? 채팅 내역도 모두 삭제됩니다.')) return;
+    fetch(`/api/admin/meetings/${meetingIdx}`, { method: 'DELETE', headers })
+    .then(r => r.text())
+    .then(res => {
+      if (res === 'ok') { showToast('삭제되었습니다.', 'success'); loadMeetings(); }
+      else showToast(res, 'error');
+    });
+  }
+
+ function deleteUser(userIdx, nickname) {
+    if (!confirm(`'${nickname}' 회원을 강제 탈퇴시키겠습니까?\n해당 회원의 모든 모임과 채팅이 삭제됩니다.`)) return;
+    fetch(`/api/admin/users/${userIdx}`, { method: 'DELETE', headers })
+    .then(r => r.text())
+    .then(res => {
+      if (res === 'ok') { showToast('탈퇴 처리되었습니다.', 'success'); loadUsers(); loadMeetings(); }
+      else showToast(res, 'error');
+    });
+  }
+
+  loadMeetings();
+  loadUsers();
+</script>
+</body>
+</html>
