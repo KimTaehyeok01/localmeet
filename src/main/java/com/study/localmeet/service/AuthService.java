@@ -77,4 +77,12 @@ public class AuthService {
     public boolean checkNickname(String userNickname) {
         return usersRepository.existsByUserNickname(userNickname);
     }
+
+    // 주소 업데이트 (소셜 로그인 후)
+    @Transactional
+    public void updateAddress(String userEmail, String userAddress, Double userLat, Double userLng) {
+        Users users = usersRepository.findByUserEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+        users.update(users.getUserNickname(), userAddress, userLat, userLng);
+    }
 }
