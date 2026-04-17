@@ -63,8 +63,8 @@ public class AuthController {
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
     public ResponseEntity<Map<String, Object>> updateAddress(
             @RequestParam String userAddress,
-            @RequestParam Double userLat,
-            @RequestParam Double userLng,
+            @RequestParam(required = false, defaultValue = "0.0") Double userLat,
+            @RequestParam(required = false, defaultValue = "0.0") Double userLng,
             Authentication authentication) {
         Map<String, Object> result = new LinkedHashMap<>();
         authService.updateAddress(authentication.getName(), userAddress, userLat, userLng);

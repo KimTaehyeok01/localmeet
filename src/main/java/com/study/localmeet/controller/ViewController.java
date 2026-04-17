@@ -70,6 +70,7 @@ public class ViewController {
                                 Model model) {
         model.addAttribute("token", token);
         model.addAttribute("needAddress", Boolean.TRUE.equals(needAddress));
+        model.addAttribute("kakaoMapApiKey", kakaoMapApiKey);
         return "auth/oauth2Success";
     }
 
