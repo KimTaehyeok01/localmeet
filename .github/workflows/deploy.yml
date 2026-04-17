@@ -57,23 +57,23 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew bootJar -x test
 
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key.pem
+          chmod 600 ~/.ssh/deploy_key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
       - name: Copy JAR to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "build/libs/*.jar"
-          target: "~/localmeet"
-          strip_components: 2
+        run: |
+          scp -i ~/.ssh/deploy_key.pem \
+            build/libs/*.jar \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/localmeet/
 
       - name: Deploy on EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
+        run: |
+          ssh -i ~/.ssh/deploy_key.pem \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd ~/localmeet
 
             # 기존 프로세스 종료
@@ -96,3 +96,4 @@ jobs:
               tail -30 app.log
               exit 1
             fi
+          EOF
