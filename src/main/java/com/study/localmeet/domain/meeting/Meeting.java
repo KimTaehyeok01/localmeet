@@ -42,12 +42,17 @@ public class Meeting {
     private MeetingStatus meetingStatus;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     // 모임 작성자 (다대일 관계)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_idx", nullable = false)
     private Users users;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
     @Builder
     public Meeting(String meetingTitle, String meetingContent, String meetingAddress,
@@ -61,7 +66,6 @@ public class Meeting {
         this.meetingMax = meetingMax;
         this.meetingStatus = meetingStatus != null ? meetingStatus : MeetingStatus.OPEN;
         this.users = users;
-        this.createdAt = LocalDateTime.now();
     }
 
     // 모임 수정

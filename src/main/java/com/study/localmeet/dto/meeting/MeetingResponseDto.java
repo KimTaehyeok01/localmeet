@@ -22,6 +22,7 @@ public class MeetingResponseDto {
     // 작성자 정보
     private Long userIdx;
     private String userNickname;
+    private String userEmail;
 
     // 현재 참가 인원
     private int currentCount;
@@ -39,6 +40,7 @@ public class MeetingResponseDto {
         this.createdAt = entity.getCreatedAt();
         this.userIdx = entity.getUsers().getUserIdx();
         this.userNickname = entity.getUsers().getUserNickname();
+        this.userEmail = entity.getUsers().getUserEmail();
     }
 
     public void setCurrentCount(int currentCount) {

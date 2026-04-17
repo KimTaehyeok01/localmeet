@@ -41,7 +41,12 @@ public class Users {
     private Double userLng;  // 경도
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
     @Builder
     public Users(String userEmail, String userPassword, String userNickname,
@@ -53,7 +58,6 @@ public class Users {
         this.userAddress = userAddress;
         this.userLat = userLat;
         this.userLng = userLng;
-        this.createdAt = LocalDateTime.now();
     }
 
     // 프로필 수정

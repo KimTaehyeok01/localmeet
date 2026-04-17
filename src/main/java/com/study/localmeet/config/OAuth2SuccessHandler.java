@@ -41,11 +41,27 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     @SuppressWarnings("unchecked")
     private String extractEmail(Map<String, Object> attributes) {
-        if (attributes.containsKey("email")) return (String) attributes.get("email");
+        if (attributes.containsKey("email")) {
+            String email = (String) attributes.get("email");
+            if (email != null && !email.isEmpty()) return email;
+        }
+
         if (attributes.containsKey("kakao_account")) {
             Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-            return (String) kakaoAccount.get("email");
+            if (kakaoAccount != null) {
+                String email = (String) kakaoAccount.get("email");
+                if (email != null && !email.isEmpty()) return email;
+            }
         }
+
+        if (attributes.containsKey("response")) {
+            Map<String, Object> naverResponse = (Map<String, Object>) attributes.get("response");
+            if (naverResponse != null) {
+                String email = (String) naverResponse.get("email");
+                if (email != null && !email.isEmpty()) return email;
+            }
+        }
+
         throw new RuntimeException("이메일 정보를 가져올 수 없습니다.");
     }
 }

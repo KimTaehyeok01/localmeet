@@ -132,8 +132,16 @@
       headers: { 'Content-Type':'application/x-www-form-urlencoded', 'JWT_TOKEN': token },
       body: params.toString()
     })
-    .then(r => r.text())
-    .then(html => document.write(html));
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        showToast(data.message, 'success');
+        setTimeout(() => location.href = `/view/meetings/${data.meetingIdx}`, 800);
+      } else {
+        showToast(data.message || '모임 수정 실패', 'error');
+      }
+    })
+    .catch(() => showToast('서버 오류가 발생했습니다.', 'error'));
   }
 </script>
 </body>

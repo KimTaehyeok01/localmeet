@@ -6,15 +6,18 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
 
-// 모든 요청에서 JWT 토큰을 검사하는 필터
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends GenericFilterBean {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtUtil jwtUtil;
 
@@ -22,13 +25,15 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        // 헤더에서 토큰 추출
         String token = jwtUtil.resolveToken((HttpServletRequest) request);
 
-        // 토큰이 있고 유효하면 SecurityContext에 인증 정보 저장
-        if (token != null && jwtUtil.validateToken(token)) {
-            Authentication authentication = jwtUtil.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (token != null) {
+            if (jwtUtil.validateToken(token)) {
+                Authentication authentication = jwtUtil.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                log.debug("Invalid JWT token from {}", ((HttpServletRequest) request).getRemoteAddr());
+            }
         }
 
         chain.doFilter(request, response);

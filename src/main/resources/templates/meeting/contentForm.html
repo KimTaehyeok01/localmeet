@@ -118,16 +118,27 @@
 
   function joinMeeting() {
     fetch(`/api/meetings/${meetingIdx}/join`, { method:'POST', headers:{'JWT_TOKEN':token} })
-    .then(r => r.text()).then(msg => {
-      showToast(msg, 'success');
-      setTimeout(() => location.reload(), 1000);
-    });
+    .then(r => r.json())
+    .then(data => {
+      showToast(data.message, data.success ? 'success' : 'error');
+      if (data.success) setTimeout(() => location.reload(), 1000);
+    })
+    .catch(() => showToast('서버 오류가 발생했습니다.', 'error'));
   }
 
   function deleteMeeting() {
     if (!confirm('정말 삭제하시겠습니까?')) return;
-    fetch(`/api/meetings/${meetingIdx}/delete`, { headers:{'JWT_TOKEN':token} })
-    .then(r => r.text()).then(html => document.write(html));
+    fetch(`/api/meetings/${meetingIdx}`, { method:'DELETE', headers:{'JWT_TOKEN':token} })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        showToast(data.message, 'success');
+        setTimeout(() => location.href = '/view/meetings', 800);
+      } else {
+        showToast(data.message || '삭제 실패', 'error');
+      }
+    })
+    .catch(() => showToast('서버 오류가 발생했습니다.', 'error'));
   }
 
   // 카카오맵

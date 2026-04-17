@@ -31,14 +31,18 @@ public class MeetingMember {
     private Boolean isApproved = false;  // 승인 여부 (false=대기, true=승인)
 
     @Column(name = "joined_at", nullable = false)
-    private LocalDateTime joinedAt = LocalDateTime.now();
+    private LocalDateTime joinedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.joinedAt = LocalDateTime.now();
+    }
 
     @Builder
     public MeetingMember(Meeting meeting, Users users) {
         this.meeting = meeting;
         this.users = users;
         this.isApproved = false;
-        this.joinedAt = LocalDateTime.now();
     }
 
     // 참가 승인

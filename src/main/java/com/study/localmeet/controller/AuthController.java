@@ -6,11 +6,15 @@ import com.study.localmeet.dto.auth.UserResponseDto;
 import com.study.localmeet.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-// 회원가입 / 로그인 REST API
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -18,36 +22,38 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // 회원가입
     @PostMapping("/signup")
-    public UserResponseDto signup(@ModelAttribute @Valid SignupRequestDto dto) {
-        return authService.signup(dto);
+    public ResponseEntity<UserResponseDto> signup(@ModelAttribute @Valid SignupRequestDto dto) {
+        UserResponseDto result = authService.signup(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
-    // 로그인 -> JWT 토큰 반환
     @PostMapping("/login")
-    public String login(@ModelAttribute @Valid LoginRequestDto dto) {
+    public ResponseEntity<Map<String, Object>> login(@ModelAttribute @Valid LoginRequestDto dto) {
+        Map<String, Object> result = new LinkedHashMap<>();
         try {
-            return authService.login(dto);
-        } catch (Exception e) {
-            return "로그인 실패: " + e.getMessage();
+            String token = authService.login(dto);
+            result.put("success", true);
+            result.put("token", token);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
         }
     }
 
-    // 내 정보 조회 (JWT 인증 필요)
     @GetMapping("/mypage")
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
     public UserResponseDto mypage(Authentication authentication) {
         return authService.getMyInfo(authentication.getName());
     }
 
-    // 이메일 중복 체크
     @GetMapping("/check-email")
     public boolean checkEmail(@RequestParam String userEmail) {
         return authService.checkEmail(userEmail);
     }
 
-    // 닉네임 중복 체크
     @GetMapping("/check-nickname")
     public boolean checkNickname(@RequestParam String userNickname) {
         return authService.checkNickname(userNickname);
