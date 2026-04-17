@@ -26,8 +26,8 @@
                 <button class="btn btn-secondary" onclick="searchAddress()" style="white-space:nowrap;">검색</button>
             </div>
         </div>
-        <input type="hidden" id="userLat">
-        <input type="hidden" id="userLng">
+        <input type="hidden" id="userLat" value="0">
+        <input type="hidden" id="userLng" value="0">
 
         <button class="btn btn-primary btn-full" style="margin-top:16px;" onclick="saveAddress()">저장하고 시작하기</button>
     </div>
@@ -36,8 +36,9 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script th:inline="javascript">
-    const token = /*[[${token}]]*/ '';
+    const token       = /*[[${token}]]*/ '';
     const needAddress = /*[[${needAddress}]]*/ false;
+    const kakaoApiKey = /*[[${kakaoMapApiKey}]]*/ '';
 
     if (token) {
         localStorage.setItem('JWT_TOKEN', token);
@@ -46,7 +47,7 @@
         if (needAddress) {
             document.getElementById('loadingScreen').style.display = 'none';
             document.getElementById('addressScreen').style.display = 'flex';
-            loadKakaoMap();
+            loadScripts();
         } else {
             location.href = '/view/meetings';
         }
@@ -55,11 +56,16 @@
         location.href = '/view/login';
     }
 
-    function loadKakaoMap() {
-        // 카카오 주소 검색 SDK 동적 로드
-        const script = document.createElement('script');
-        script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
-        document.head.appendChild(script);
+    function loadScripts() {
+        // 다음 주소 검색 SDK
+        const postScript = document.createElement('script');
+        postScript.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+        document.head.appendChild(postScript);
+
+        // 카카오 Maps SDK (Geocoder용)
+        const mapScript = document.createElement('script');
+        mapScript.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoApiKey}&libraries=services&autoload=false`;
+        document.head.appendChild(mapScript);
     }
 
     function searchAddress() {
@@ -68,16 +74,15 @@
                 const fullAddress = data.address;
                 document.getElementById('userAddress').value = fullAddress;
 
-                // 카카오 지도 Geocoder로 좌표 변환
-                fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(fullAddress)}`, {
-                    headers: { 'Authorization': 'KakaoAK 551598f35b84843c6fbfce522b0f2ffb' }
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.documents && data.documents.length > 0) {
-                        document.getElementById('userLat').value = data.documents[0].y;
-                        document.getElementById('userLng').value = data.documents[0].x;
-                    }
+                // 카카오 Maps SDK Geocoder로 좌표 변환
+                kakao.maps.load(function() {
+                    const geocoder = new kakao.maps.services.Geocoder();
+                    geocoder.addressSearch(fullAddress, function(result, status) {
+                        if (status === kakao.maps.services.Status.OK) {
+                            document.getElementById('userLat').value = result[0].y;
+                            document.getElementById('userLng').value = result[0].x;
+                        }
+                    });
                 });
             }
         }).open();
@@ -94,8 +99,8 @@
 
     function saveAddress() {
         const userAddress = document.getElementById('userAddress').value.trim();
-        const userLat = document.getElementById('userLat').value;
-        const userLng = document.getElementById('userLng').value;
+        const userLat     = document.getElementById('userLat').value || '0';
+        const userLng     = document.getElementById('userLng').value || '0';
 
         if (!userAddress) { showToast('주소를 검색해주세요.', 'error'); return; }
 
