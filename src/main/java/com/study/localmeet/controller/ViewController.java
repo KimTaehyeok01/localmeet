@@ -65,8 +65,11 @@ public class ViewController {
     }
 
     @GetMapping("/view/oauth2/success")
-    public String oauth2Success(@RequestParam String token, Model model) {
+    public String oauth2Success(@RequestParam String token,
+                                @RequestParam(required = false) Boolean needAddress,
+                                Model model) {
         model.addAttribute("token", token);
+        model.addAttribute("needAddress", Boolean.TRUE.equals(needAddress));
         return "auth/oauth2Success";
     }
 

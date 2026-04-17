@@ -36,7 +36,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 Arrays.asList(users.getUserRole().getValue())
         );
 
-        response.sendRedirect("/view/oauth2/success?token=" + token);
+        boolean needAddress = users.getUserAddress() == null || users.getUserAddress().isBlank();
+        String redirectUrl = "/view/oauth2/success?token=" + token + (needAddress ? "&needAddress=true" : "");
+        response.sendRedirect(redirectUrl);
     }
 
     @SuppressWarnings("unchecked")

@@ -58,4 +58,17 @@ public class AuthController {
     public boolean checkNickname(@RequestParam String userNickname) {
         return authService.checkNickname(userNickname);
     }
+
+    @PostMapping("/address")
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    public ResponseEntity<Map<String, Object>> updateAddress(
+            @RequestParam String userAddress,
+            @RequestParam Double userLat,
+            @RequestParam Double userLng,
+            Authentication authentication) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        authService.updateAddress(authentication.getName(), userAddress, userLat, userLng);
+        result.put("success", true);
+        return ResponseEntity.ok(result);
+    }
 }
