@@ -60,40 +60,37 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key.pem
+          echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > ~/.ssh/deploy_key.pem
           chmod 600 ~/.ssh/deploy_key.pem
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: Copy JAR to EC2
         run: |
-          scp -i ~/.ssh/deploy_key.pem \
+          scp -i ~/.ssh/deploy_key.pem -o StrictHostKeyChecking=no \
             build/libs/*.jar \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/localmeet/
 
       - name: Deploy on EC2
         run: |
-          ssh -i ~/.ssh/deploy_key.pem \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            cd ~/localmeet
+          ssh -i ~/.ssh/deploy_key.pem -o StrictHostKeyChecking=no \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} bash -s << 'ENDSSH'
+          cd ~/localmeet
 
-            # 기존 프로세스 종료
-            if [ -f app.pid ]; then
-              kill -9 $(cat app.pid) 2>/dev/null || true
-              rm -f app.pid
-            fi
-            sleep 2
+          if [ -f app.pid ]; then
+            kill -9 $(cat app.pid) 2>/dev/null || true
+            rm -f app.pid
+          fi
+          sleep 2
 
-            # 새 버전 실행
-            nohup java -jar *.jar > app.log 2>&1 &
-            echo $! > app.pid
-            sleep 5
+          nohup java -jar *.jar > app.log 2>&1 &
+          echo $! > app.pid
+          sleep 5
 
-            # 실행 확인
-            if kill -0 $(cat app.pid) 2>/dev/null; then
-              echo "배포 성공 (PID: $(cat app.pid))"
-            else
-              echo "배포 실패 - 로그:"
-              tail -30 app.log
-              exit 1
-            fi
-          EOF
+          if kill -0 $(cat app.pid) 2>/dev/null; then
+            echo "배포 성공 (PID: $(cat app.pid))"
+          else
+            echo "배포 실패 - 로그:"
+            tail -30 app.log
+            exit 1
+          fi
+          ENDSSH
