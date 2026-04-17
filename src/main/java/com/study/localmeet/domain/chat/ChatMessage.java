@@ -31,13 +31,17 @@ public class ChatMessage {
     private String chatContent;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
     @Builder
     public ChatMessage(Meeting meeting, Users users, String chatContent) {
         this.meeting = meeting;
         this.users = users;
         this.chatContent = chatContent;
-        this.createdAt = LocalDateTime.now();
     }
 }

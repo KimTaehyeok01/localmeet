@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,7 +26,6 @@ public class AdminService {
     private final MeetingMemberRepository meetingMemberRepository;
     private final ChatMessageRepository chatMessageRepository;
 
-    // 전체 회원 목록
     @Transactional(readOnly = true)
     public List<UserResponseDto> findAllUsers() {
         return usersRepository.findAll().stream()
@@ -33,55 +33,53 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    // 회원 강제 탈퇴 (관련 데이터 cascade 삭제)
     @Transactional
     public void deleteUser(Long userIdx) {
         Users user = usersRepository.findById(userIdx)
                 .orElseThrow(() -> new IllegalArgumentException("없는 회원입니다."));
 
-        // 이 회원이 만든 모임과 관련 데이터 삭제
-        List<Meeting> userMeetings = meetingRepository.findAllByUsers_UserIdxOrderByCreatedAtDesc(userIdx);
-        for (Meeting meeting : userMeetings) {
-            Long meetingIdx = meeting.getMeetingIdx();
-            chatMessageRepository.deleteAll(
-                    chatMessageRepository.findAllByMeeting_MeetingIdxOrderByCreatedAtAsc(meetingIdx));
-            meetingMemberRepository.deleteAll(
-                    meetingMemberRepository.findAllByMeeting_MeetingIdx(meetingIdx));
-        }
-        meetingRepository.deleteAll(userMeetings);
+        List<Long> userMeetingIds = meetingRepository
+                .findAllByUsers_UserIdxOrderByCreatedAtDesc(userIdx)
+                .stream()
+                .map(Meeting::getMeetingIdx)
+                .collect(Collectors.toList());
 
-        // 다른 모임에서의 채팅, 참가 신청 삭제
+        if (!userMeetingIds.isEmpty()) {
+            chatMessageRepository.deleteAllByMeetingIdxIn(userMeetingIds);
+            meetingMemberRepository.deleteAllByMeetingIdxIn(userMeetingIds);
+            meetingRepository.deleteAllByUsersUserIdx(userIdx);
+        }
+
         chatMessageRepository.deleteAllByUsers_UserIdx(userIdx);
         meetingMemberRepository.deleteAllByUsers_UserIdx(userIdx);
-
         usersRepository.delete(user);
     }
 
-    // 전체 모임 목록 (관리자용)
     @Transactional(readOnly = true)
     public List<MeetingResponseDto> findAllMeetings() {
-        return meetingRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(meeting -> {
-                    MeetingResponseDto dto = new MeetingResponseDto(meeting);
-                    int count = meetingMemberRepository.countByMeeting_MeetingIdx(meeting.getMeetingIdx());
-                    dto.setCurrentCount(count);
-                    return dto;
-                }).collect(Collectors.toList());
+        List<Meeting> list = meetingRepository.findAllByOrderByCreatedAtDesc();
+        Map<Long, Integer> countMap = meetingMemberRepository.countAllGroupByMeeting()
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> ((Long) row[1]).intValue()
+                ));
+        return list.stream().map(meeting -> {
+            MeetingResponseDto dto = new MeetingResponseDto(meeting);
+            dto.setCurrentCount(countMap.getOrDefault(meeting.getMeetingIdx(), 0));
+            return dto;
+        }).collect(Collectors.toList());
     }
 
-    // 모임 강제 삭제
     @Transactional
     public void deleteMeeting(Long meetingIdx) {
         Meeting meeting = meetingRepository.findById(meetingIdx)
                 .orElseThrow(() -> new IllegalArgumentException("없는 모임입니다."));
-        chatMessageRepository.deleteAll(
-                chatMessageRepository.findAllByMeeting_MeetingIdxOrderByCreatedAtAsc(meetingIdx));
-        meetingMemberRepository.deleteAll(
-                meetingMemberRepository.findAllByMeeting_MeetingIdx(meetingIdx));
+        chatMessageRepository.deleteAllByMeeting_MeetingIdx(meetingIdx);
+        meetingMemberRepository.deleteAllByMeeting_MeetingIdx(meetingIdx);
         meetingRepository.delete(meeting);
     }
 
-    // 모임 상태 변경
     @Transactional
     public void updateMeetingStatus(Long meetingIdx, String status) {
         Meeting meeting = meetingRepository.findById(meetingIdx)

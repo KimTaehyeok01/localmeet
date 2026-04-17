@@ -19,14 +19,19 @@ public class OAuthAttributes {
         if ("kakao".equals(registrationId)) {
             return ofKakao(attributes);
         }
-        return ofGoogle(attributes);
+        if ("naver".equals(registrationId)) {
+            return ofNaver(attributes);
+        }
+        throw new IllegalArgumentException("지원하지 않는 소셜 로그인입니다: " + registrationId);
     }
 
-    private static OAuthAttributes ofGoogle(Map<String, Object> attributes) {
+    @SuppressWarnings("unchecked")
+    private static OAuthAttributes ofNaver(Map<String, Object> attributes) {
+        Map<String, Object> response = (Map<String, Object>) attributes.get("response");
         return OAuthAttributes.builder()
-                .email((String) attributes.get("email"))
-                .nickname((String) attributes.get("name"))
-                .provider("google")
+                .email((String) response.get("email"))
+                .nickname((String) response.get("nickname"))
+                .provider("naver")
                 .build();
     }
 

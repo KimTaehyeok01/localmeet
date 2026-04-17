@@ -37,7 +37,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         return new DefaultOAuth2User(
                 Collections.singletonList(new SimpleGrantedAuthority(users.getUserRole().getValue())),
                 oAuth2User.getAttributes(),
-                "google".equals(registrationId) ? "sub" : "id"
+                "naver".equals(registrationId) ? "response" : "id"
         );
     }
 }
