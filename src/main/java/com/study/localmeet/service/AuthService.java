@@ -51,7 +51,7 @@ public class AuthService {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        // JWT 토큰 생성 후 반환 (Ex17JWT ApiController 패턴과 동일)
+        // JWT 토큰 생성 후 반환
         return jwtUtil.createToken(
                 users.getUserEmail(),
                 Arrays.asList(users.getUserRole().getValue())
