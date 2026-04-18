@@ -76,7 +76,7 @@
   const kakaoMapApiKey = /*[[${kakaoMapApiKey}]]*/ '';
   const initList = /*[[${list}]]*/ [];
 </script>
-<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=551598f35b84843c6fbfce522b0f2ffb"></script>
+<script th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoMapApiKey} + '&autoload=false'}"></script>
 <script>
   // 네비게이션 로그인 상태 반영
   const token = localStorage.getItem('JWT_TOKEN');
@@ -98,25 +98,27 @@
   }
 
   // 카카오맵
-  var container = document.getElementById('map');
-  var options = {
-    center: new kakao.maps.LatLng(37.5665, 126.9780),
-    level: 7
-  };
-  var map = new kakao.maps.Map(container, options);
+  kakao.maps.load(function() {
+    var container = document.getElementById('map');
+    var options = {
+      center: new kakao.maps.LatLng(37.5665, 126.9780),
+      level: 7
+    };
+    var map = new kakao.maps.Map(container, options);
 
-  initList.forEach(function (m) {
-    if (m.meetingLat && m.meetingLng) {
-      var marker = new kakao.maps.Marker({
-        map: map,
-        position: new kakao.maps.LatLng(m.meetingLat, m.meetingLng),
-        title: m.meetingTitle
-      });
-      kakao.maps.event.addListener(marker, 'click', function () {
-        location.href = '/view/meetings/' + m.meetingIdx;
-      });
-    }
-  });
+    initList.forEach(function (m) {
+      if (m.meetingLat && m.meetingLng) {
+        var marker = new kakao.maps.Marker({
+          map: map,
+          position: new kakao.maps.LatLng(m.meetingLat, m.meetingLng),
+          title: m.meetingTitle
+        });
+        kakao.maps.event.addListener(marker, 'click', function () {
+          location.href = '/view/meetings/' + m.meetingIdx;
+        });
+      }
+    });
+  }); // kakao.maps.load 끝
 
   // 검색
   function search() {
