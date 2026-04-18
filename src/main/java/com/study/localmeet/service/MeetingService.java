@@ -147,18 +147,6 @@ public class MeetingService {
                 meetingIdx, userEmail, true);
     }
 
-    @Transactional(readOnly = true)
-    public boolean canChat(Long meetingIdx, String userEmail) {
-        Meeting meeting = meetingRepository.findById(meetingIdx)
-                .orElseThrow(() -> new IllegalArgumentException("없는 모임입니다."));
-
-        if (meeting.getUsers().getUserEmail().equals(userEmail)) {
-            return true;
-        }
-
-        return meetingMemberRepository.existsByMeeting_MeetingIdxAndUsers_UserEmail(meetingIdx, userEmail);
-    }
-
     private Map<Long, Integer> buildCountMap() {
         return meetingMemberRepository.countAllGroupByMeeting()
                 .stream()
