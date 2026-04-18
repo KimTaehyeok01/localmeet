@@ -38,9 +38,9 @@ public class MeetingResponseDto {
         this.meetingMax = entity.getMeetingMax();
         this.meetingStatus = entity.getMeetingStatus();
         this.createdAt = entity.getCreatedAt();
-        this.userIdx = entity.getUsers().getUserIdx();
-        this.userNickname = entity.getUsers().getUserNickname();
-        this.userEmail = entity.getUsers().getUserEmail();
+        this.userIdx = entity.getUsers() != null ? entity.getUsers().getUserIdx() : null;
+        this.userNickname = entity.getUsers() != null ? entity.getUsers().getUserNickname() : "(탈퇴한 회원)";
+        this.userEmail = entity.getUsers() != null ? entity.getUsers().getUserEmail() : null;
     }
 
     public void setCurrentCount(int currentCount) {
