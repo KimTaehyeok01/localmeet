@@ -4,6 +4,8 @@ import com.study.localmeet.domain.user.Users;
 import com.study.localmeet.enumeration.MeetingStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import java.time.LocalDateTime;
 
@@ -47,6 +49,7 @@ public class Meeting {
     // 모임 작성자 (다대일 관계)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_idx", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private Users users;
 
     @PrePersist
