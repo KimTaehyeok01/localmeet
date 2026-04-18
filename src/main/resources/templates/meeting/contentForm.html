@@ -157,6 +157,7 @@
 
   // ── 채팅 ──
   let stompClient = null;
+  const renderedChatIds = new Set();
 
   fetch(`/api/chat/${meetingIdx}`)
   .then(r => r.json())
@@ -183,15 +184,31 @@
 
   function sendChat() {
     if (!token) { showToast('로그인이 필요합니다.', 'error'); return; }
-    if (!stompClient || !stompClient.connected) { showToast('채팅 서버 연결 중입니다. 잠시 후 다시 시도해주세요.', 'error'); return; }
     const content = document.getElementById('chatInput').value.trim();
     if (!content) return;
-    stompClient.send(`/app/chat/send/${meetingIdx}`, { 'JWT_TOKEN': token },
-      JSON.stringify({ meetingIdx, chatContent: content }));
-    document.getElementById('chatInput').value = '';
+    fetch(`/api/chat/${meetingIdx}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'JWT_TOKEN': token },
+      body: JSON.stringify({ meetingIdx, chatContent: content })
+    })
+    .then(async r => {
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.message || '채팅 전송 실패');
+      }
+      return r.json();
+    })
+    .then(saved => {
+      appendChat(saved);
+      document.getElementById('chatInput').value = '';
+    })
+    .catch(e => showToast(e.message, 'error'));
   }
 
   function appendChat(msg) {
+    if (msg.chatIdx && renderedChatIds.has(msg.chatIdx)) return;
+    if (msg.chatIdx) renderedChatIds.add(msg.chatIdx);
+
     const box = document.getElementById('chatBox');
     // 안내 메시지 제거
     const empty = box.querySelector('[style*="margin:auto"]');
