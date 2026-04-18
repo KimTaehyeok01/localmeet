@@ -27,6 +27,8 @@ public interface MeetingMemberRepository extends JpaRepository<MeetingMember, Lo
     boolean existsByMeeting_MeetingIdxAndUsers_UserEmailAndIsApproved(
             Long meetingIdx, String userEmail, Boolean isApproved);
 
+    boolean existsByMeeting_MeetingIdxAndUsers_UserEmail(Long meetingIdx, String userEmail);
+
     @Query("SELECT mm.meeting.meetingIdx, COUNT(mm) FROM MeetingMember mm GROUP BY mm.meeting.meetingIdx")
     List<Object[]> countAllGroupByMeeting();
 

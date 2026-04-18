@@ -34,11 +34,15 @@ public class ChatController {
 
         String userEmail = jwtUtil.getEmail(token);
 
-        if (!meetingService.isApprovedMember(meetingIdx, userEmail)) {
+        if (!meetingService.canChat(meetingIdx, userEmail)) {
             return;
         }
 
-        ChatMessageDto savedDto = chatService.save(meetingIdx, userEmail, dto.getChatContent());
+        if (dto.getChatContent() == null || dto.getChatContent().trim().isEmpty()) {
+            return;
+        }
+
+        ChatMessageDto savedDto = chatService.save(meetingIdx, userEmail, dto.getChatContent().trim());
         messagingTemplate.convertAndSend("/topic/meeting/" + meetingIdx, savedDto);
     }
 
