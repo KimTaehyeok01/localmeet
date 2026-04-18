@@ -183,6 +183,7 @@
 
   function sendChat() {
     if (!token) { showToast('로그인이 필요합니다.', 'error'); return; }
+    if (!stompClient || !stompClient.connected) { showToast('채팅 서버 연결 중입니다. 잠시 후 다시 시도해주세요.', 'error'); return; }
     const content = document.getElementById('chatInput').value.trim();
     if (!content) return;
     stompClient.send(`/app/chat/send/${meetingIdx}`, { 'JWT_TOKEN': token },
