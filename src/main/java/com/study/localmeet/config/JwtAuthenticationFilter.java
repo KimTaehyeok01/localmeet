@@ -29,8 +29,12 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 
         if (token != null) {
             if (jwtUtil.validateToken(token)) {
-                Authentication authentication = jwtUtil.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                try {
+                    Authentication authentication = jwtUtil.getAuthentication(token);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } catch (Exception e) {
+                    log.debug("JWT authentication failed: {}", e.getMessage());
+                }
             } else {
                 log.debug("Invalid JWT token from {}", ((HttpServletRequest) request).getRemoteAddr());
             }
