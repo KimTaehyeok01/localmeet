@@ -87,6 +87,7 @@
     .then(data => {
       if (data.success) {
         localStorage.setItem('JWT_TOKEN', data.token);
+        document.cookie = 'JWT_TOKEN=' + data.token + '; path=/; SameSite=Strict';
         showToast('로그인 성공!', 'success');
         setTimeout(() => location.href = '/view/meetings', 500);
       } else {
