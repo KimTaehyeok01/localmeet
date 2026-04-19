@@ -5,6 +5,224 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title th:text="${dto.meetingTitle} + ' - LocalMeet'">모임 상세</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    body { background: #f8faff; }
+
+    /* ─────────────────────────────
+       히어로
+    ───────────────────────────── */
+    .detail-hero {
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 55%, #3b82f6 100%);
+      padding: 40px 24px 72px;
+      position: relative;
+      overflow: hidden;
+    }
+    .detail-hero::before {
+      content: '';
+      position: absolute;
+      width: 420px; height: 420px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      top: -160px; right: -80px;
+      pointer-events: none;
+    }
+    .detail-hero::after {
+      content: '';
+      position: absolute;
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      bottom: -100px; left: -30px;
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.85rem; font-weight: 500;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: #fff; }
+
+    .hero-badge-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .hero-title {
+      font-size: 1.75rem; font-weight: 800;
+      color: #fff; letter-spacing: -0.5px;
+      line-height: 1.3; margin-bottom: 16px;
+    }
+    .hero-meta {
+      display: flex; flex-wrap: wrap; gap: 16px;
+    }
+    .hero-meta-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.85rem; color: rgba(255,255,255,0.78);
+    }
+
+    /* 히어로 배지 */
+    .h-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 0.2px;
+    }
+    .h-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; display: block; }
+    .h-badge-open   { background: rgba(34,197,94,0.2);  color: #bbf7d0; border: 1px solid rgba(34,197,94,0.3); }
+    .h-badge-open::before   { background: #4ade80; }
+    .h-badge-full   { background: rgba(245,158,11,0.2); color: #fde68a; border: 1px solid rgba(245,158,11,0.3); }
+    .h-badge-full::before   { background: #fbbf24; }
+    .h-badge-closed { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.2); }
+    .h-badge-closed::before { background: rgba(255,255,255,0.5); }
+
+    /* ─────────────────────────────
+       본문 (카드 올라오는 구조)
+    ───────────────────────────── */
+    .page-body {
+      max-width: 800px;
+      margin: -40px auto 0;
+      padding: 0 24px 60px;
+      position: relative; z-index: 2;
+    }
+
+    /* ─────────────────────────────
+       공통 섹션 카드
+    ───────────────────────────── */
+    .section-card {
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid #e8edf5;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .section-card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 0.8rem; font-weight: 700;
+      color: #9ca3af; text-transform: uppercase; letter-spacing: 0.7px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ─────────────────────────────
+       액션 버튼 카드
+    ───────────────────────────── */
+    .action-card {
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid #e8edf5;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      padding: 20px 24px;
+      display: flex; gap: 12px;
+      margin-bottom: 16px;
+    }
+    .btn-join {
+      flex: 1;
+      background: #2563eb; color: #fff;
+      border: none; border-radius: 12px;
+      padding: 13px 20px;
+      font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-join:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(37,99,235,0.3); }
+    .btn-edit {
+      flex: 1;
+      background: #eff6ff; color: #2563eb;
+      border: 1.5px solid #bfdbfe; border-radius: 12px;
+      padding: 13px 20px;
+      font-size: 0.92rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      transition: background 0.15s;
+    }
+    .btn-edit:hover { background: #dbeafe; }
+    .btn-delete {
+      background: #fef2f2; color: #ef4444;
+      border: 1.5px solid #fecaca; border-radius: 12px;
+      padding: 13px 20px;
+      font-size: 0.92rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      transition: background 0.15s;
+    }
+    .btn-delete:hover { background: #fee2e2; }
+
+    /* ─────────────────────────────
+       모임 내용
+    ───────────────────────────── */
+    .content-body {
+      padding: 24px;
+      font-size: 0.97rem; color: #374151;
+      line-height: 1.9;
+      white-space: pre-line;
+    }
+
+    /* ─────────────────────────────
+       채팅
+    ───────────────────────────── */
+    .chat-box {
+      height: 320px; overflow-y: auto;
+      padding: 20px 24px;
+      display: flex; flex-direction: column; gap: 14px;
+      background: #fafbff;
+    }
+    .chat-msg { display: flex; flex-direction: column; gap: 4px; }
+    .chat-msg-author { font-size: 0.78rem; font-weight: 700; color: #2563eb; }
+    .chat-msg-content {
+      background: #fff; border: 1px solid #e8edf5;
+      border-radius: 4px 14px 14px 14px;
+      padding: 10px 14px; font-size: 0.9rem; color: #111827;
+      display: inline-block; max-width: 80%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .chat-msg-time { font-size: 0.74rem; color: #9ca3af; }
+
+    .chat-input-area {
+      display: flex; gap: 10px;
+      padding: 14px 24px;
+      border-top: 1px solid #f3f4f6;
+      background: #fff;
+    }
+    .chat-input-area input {
+      flex: 1;
+      border: 1.5px solid #e5e7eb; border-radius: 12px;
+      padding: 11px 16px; font-size: 0.9rem;
+      font-family: 'Noto Sans KR', sans-serif;
+      outline: none; color: #111827;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .chat-input-area input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .chat-input-area input::placeholder { color: #d1d5db; }
+    .chat-send-btn {
+      background: #2563eb; color: #fff;
+      border: none; border-radius: 12px;
+      padding: 11px 20px;
+      font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .chat-send-btn:hover { background: #1d4ed8; }
+
+    /* 배지 (기본 재정의) */
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 700; }
+    .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; display: block; }
+    .badge-open   { background: #ecfdf5; color: #065f46; }
+    .badge-open::before   { background: #10b981; }
+    .badge-full   { background: #fffbeb; color: #92400e; }
+    .badge-full::before   { background: #f59e0b; }
+    .badge-closed { background: #f3f4f6; color: #6b7280; }
+    .badge-closed::before { background: #9ca3af; }
+
+    @media (max-width: 640px) {
+      .detail-hero { padding: 32px 16px 60px; }
+      .hero-title { font-size: 1.4rem; }
+      .page-body { padding: 0 16px 48px; }
+      .action-card { flex-direction: column; }
+    }
+  </style>
 </head>
 <body>
 
@@ -15,46 +233,50 @@
   </div>
 </nav>
 
-<div class="container" style="max-width:800px;">
-
-  <a href="/view/meetings" style="font-size:0.88rem; color:var(--gray-400); display:inline-flex; align-items:center; gap:4px; margin-bottom:16px;">
-    ← 목록으로
-  </a>
-
-  <!-- 상세 헤더 -->
-  <div class="detail-header">
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-      <span id="statusBadge" class="badge">모집중</span>
+<!-- 히어로 -->
+<div class="detail-hero">
+  <div class="hero-inner">
+    <a href="/view/meetings" class="back-link">← 목록으로</a>
+    <div class="hero-badge-row">
+      <span id="statusBadge" class="h-badge">모집중</span>
     </div>
-    <div class="detail-title" th:text="${dto.meetingTitle}">모임 제목</div>
-    <div class="detail-meta">
-      <span>✍️ <span th:text="${dto.userNickname}">작성자</span></span>
-      <span>📍 <span th:text="${dto.meetingAddress != null ? dto.meetingAddress : '위치 미지정'}">주소</span></span>
-      <span>👥 <span th:text="${dto.currentCount}">0</span> / <span th:text="${dto.meetingMax}">0</span> 명</span>
-      <span>🕐 <span th:text="${#temporals.format(dto.createdAt, 'yyyy.MM.dd')}">날짜</span></span>
-    </div>
-    <div class="detail-actions" id="actionArea">
-      <!-- JS로 버튼 렌더링 -->
+    <div class="hero-title" th:text="${dto.meetingTitle}">모임 제목</div>
+    <div class="hero-meta">
+      <div class="hero-meta-item">✍️ <span th:text="${dto.userNickname}">작성자</span></div>
+      <div class="hero-meta-item">📍 <span th:text="${dto.meetingAddress != null ? dto.meetingAddress : '위치 미지정'}">주소</span></div>
+      <div class="hero-meta-item">👥 <span th:text="${dto.currentCount}">0</span> / <span th:text="${dto.meetingMax}">0</span> 명</div>
+      <div class="hero-meta-item">🕐 <span th:text="${#temporals.format(dto.createdAt, 'yyyy.MM.dd')}">날짜</span></div>
     </div>
   </div>
+</div>
 
-  <!-- 내용 -->
-  <div class="detail-content" th:text="${dto.meetingContent}">모임 내용</div>
+<!-- 본문 -->
+<div class="page-body">
+
+  <!-- 액션 버튼 -->
+  <div class="action-card" id="actionArea"></div>
+
+  <!-- 모임 내용 -->
+  <div class="section-card">
+    <div class="section-card-header">📋 모임 소개</div>
+    <div class="content-body" th:text="${dto.meetingContent}">모임 내용</div>
+  </div>
 
   <!-- 지도 -->
-  <div th:if="${dto.meetingLat != null}" class="map-wrap">
-    <div id="map" style="width:100%;height:240px;"></div>
+  <div th:if="${dto.meetingLat != null}" class="section-card">
+    <div class="section-card-header">📍 모임 위치</div>
+    <div id="map" style="width:100%; height:240px;"></div>
   </div>
 
   <!-- 채팅 -->
-  <div class="chat-section">
-    <div class="chat-header">💬 실시간 채팅</div>
+  <div class="section-card">
+    <div class="section-card-header">💬 실시간 채팅</div>
     <div class="chat-box" id="chatBox">
-      <div style="text-align:center; color:var(--gray-400); font-size:0.85rem; margin:auto;">채팅 내역을 불러오는 중...</div>
+      <div style="text-align:center; color:#9ca3af; font-size:0.85rem; margin:auto;">채팅 내역을 불러오는 중...</div>
     </div>
     <div class="chat-input-area">
       <input type="text" id="chatInput" placeholder="메시지를 입력하세요 (로그인 필요)">
-      <button class="btn btn-primary" onclick="sendChat()">전송</button>
+      <button class="chat-send-btn" onclick="sendChat()">전송</button>
     </div>
   </div>
 
@@ -63,12 +285,12 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script th:inline="javascript">
-  const meetingIdx          = /*[[${meetingIdx}]]*/ 0;
-  const meetingLat          = /*[[${dto.meetingLat}]]*/ null;
-  const meetingLng          = /*[[${dto.meetingLng}]]*/ null;
-  const meetingWriterNick   = /*[[${dto.userNickname}]]*/ '';
-  const meetingStatus       = /*[[${dto.meetingStatus.name()}]]*/ 'OPEN';
-  const kakaoMapApiKey      = /*[[${@environment.getProperty('kakao.map.api-key')}]]*/ '';
+  const meetingIdx        = /*[[${meetingIdx}]]*/ 0;
+  const meetingLat        = /*[[${dto.meetingLat}]]*/ null;
+  const meetingLng        = /*[[${dto.meetingLng}]]*/ null;
+  const meetingWriterNick = /*[[${dto.userNickname}]]*/ '';
+  const meetingStatus     = /*[[${dto.meetingStatus.name()}]]*/ 'OPEN';
+  const kakaoMapApiKey    = /*[[${@environment.getProperty('kakao.map.api-key')}]]*/ '';
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
@@ -85,13 +307,17 @@
   }
   function doLogout() { localStorage.removeItem('JWT_TOKEN'); document.cookie = 'JWT_TOKEN=; path=/; max-age=0'; location.href='/view/login'; }
 
-  // 배지 상태
+  // 히어로 배지 상태
   const badge = document.getElementById('statusBadge');
-  const badgeMap = { OPEN: ['badge-open','모집중'], FULL: ['badge-full','모집완료'], CLOSED: ['badge-closed','종료'] };
-  badge.className = 'badge ' + (badgeMap[meetingStatus]?.[0] || '');
+  const badgeMap = {
+    OPEN:   ['h-badge-open',   '모집중'],
+    FULL:   ['h-badge-full',   '모집완료'],
+    CLOSED: ['h-badge-closed', '종료']
+  };
+  badge.className = 'h-badge ' + (badgeMap[meetingStatus]?.[0] || '');
   badge.textContent = badgeMap[meetingStatus]?.[1] || meetingStatus;
 
-  // 액션 버튼 (로그인 여부, 본인 여부 체크)
+  // 액션 버튼
   const actionArea = document.getElementById('actionArea');
   if (token) {
     fetch('/api/auth/mypage', { headers: { 'JWT_TOKEN': token } })
@@ -99,15 +325,15 @@
     .then(user => {
       if (user.userNickname === meetingWriterNick) {
         actionArea.innerHTML = `
-          <button class="btn btn-outline" onclick="location.href='/view/meetings/${meetingIdx}/edit'">✏️ 수정</button>
-          <button class="btn btn-danger" onclick="deleteMeeting()">🗑️ 삭제</button>`;
+          <button class="btn-edit" onclick="location.href='/view/meetings/${meetingIdx}/edit'">✏️ 모임 수정</button>
+          <button class="btn-delete" onclick="deleteMeeting()">🗑️ 삭제</button>`;
       } else {
         actionArea.innerHTML = `
-          <button class="btn btn-primary" onclick="joinMeeting()">✋ 참가 신청</button>`;
+          <button class="btn-join" onclick="joinMeeting()">✋ 참가 신청하기</button>`;
       }
     });
   } else {
-    actionArea.innerHTML = `<button class="btn btn-primary" onclick="location.href='/view/login'">로그인 후 참가 신청</button>`;
+    actionArea.innerHTML = `<button class="btn-join" onclick="location.href='/view/login'">로그인 후 참가 신청</button>`;
   }
 
   function showToast(msg, type = '') {
@@ -164,7 +390,7 @@
   .then(msgs => {
     const box = document.getElementById('chatBox');
     if (msgs.length === 0) {
-      box.innerHTML = '<div style="text-align:center;color:var(--gray-400);font-size:0.85rem;margin:auto;">첫 메시지를 남겨보세요!</div>';
+      box.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:0.85rem;margin:auto;">첫 메시지를 남겨보세요!</div>';
     } else {
       box.innerHTML = '';
       msgs.forEach(m => appendChat(m));
@@ -210,7 +436,6 @@
     if (msg.chatIdx) renderedChatIds.add(msg.chatIdx);
 
     const box = document.getElementById('chatBox');
-    // 안내 메시지 제거
     const empty = box.querySelector('[style*="margin:auto"]');
     if (empty) empty.remove();
 
