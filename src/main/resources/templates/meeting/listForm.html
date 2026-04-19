@@ -6,203 +6,340 @@
   <title>모임 목록 - LocalMeet</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <style>
-    body { background: #f0f4ff; }
+    body { background: #f8faff; }
 
-    /* ── 히어로 배너 ── */
+    /* ─────────────────────────────
+       HERO
+    ───────────────────────────── */
     .hero {
-      background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
-      padding: 48px 24px 56px;
+      background: #fff;
+      border-bottom: 1px solid #e8edf5;
+      padding: 52px 24px 44px;
       text-align: center;
       position: relative;
       overflow: hidden;
     }
+    /* 배경 장식 원 */
     .hero::before {
       content: '';
       position: absolute;
-      inset: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      width: 480px; height: 480px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,99,235,0.07) 0%, transparent 70%);
+      top: -160px; left: -80px;
+      pointer-events: none;
     }
-    .hero-inner { position: relative; max-width: 600px; margin: 0 auto; }
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 360px; height: 360px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%);
+      bottom: -120px; right: -60px;
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #eff6ff;
+      color: #2563eb;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      letter-spacing: 0.2px;
+    }
     .hero-title {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
+      font-size: 2.1rem;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -1px;
+      line-height: 1.2;
+      margin-bottom: 10px;
     }
-    .hero-subtitle {
-      font-size: 1rem;
-      color: rgba(255,255,255,0.78);
-      margin-bottom: 28px;
+    .hero-title span { color: #2563eb; }
+    .hero-sub {
+      color: #6b7280;
+      font-size: 0.97rem;
+      margin-bottom: 30px;
+      line-height: 1.7;
     }
 
-    /* ── 검색바 (히어로 안) ── */
-    .hero-search {
+    /* ─────────────────────────────
+       검색바
+    ───────────────────────────── */
+    .search-wrap {
       display: flex;
-      gap: 0;
+      align-items: center;
       background: #fff;
-      border-radius: 50px;
-      overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      border: 2px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 6px 6px 6px 18px;
       max-width: 520px;
       margin: 0 auto;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(37,99,235,0.08);
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .hero-search input {
+    .search-wrap:focus-within {
+      border-color: #2563eb;
+      box-shadow: 0 4px 24px rgba(37,99,235,0.16);
+    }
+    .search-wrap input {
       flex: 1;
       border: none;
       outline: none;
-      padding: 14px 20px;
       font-size: 0.95rem;
       font-family: 'Noto Sans KR', sans-serif;
+      color: #111827;
       background: transparent;
     }
-    .hero-search .btn-search {
+    .search-wrap input::placeholder { color: #9ca3af; }
+    .search-btn {
       background: #2563eb;
       color: #fff;
       border: none;
-      padding: 14px 22px;
-      font-size: 0.92rem;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 0.88rem;
       font-weight: 600;
       cursor: pointer;
       font-family: 'Noto Sans KR', sans-serif;
-      transition: background 0.15s;
+      transition: background 0.15s, transform 0.15s;
+      white-space: nowrap;
     }
-    .hero-search .btn-search:hover { background: #1d4ed8; }
-    .hero-search .btn-all {
-      background: rgba(37,99,235,0.1);
-      color: #2563eb;
+    .search-btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .all-btn {
+      background: none;
+      color: #9ca3af;
       border: none;
-      border-left: 1px solid #e5e7eb;
-      padding: 14px 16px;
       font-size: 0.85rem;
       font-weight: 500;
       cursor: pointer;
       font-family: 'Noto Sans KR', sans-serif;
-      transition: background 0.15s;
+      padding: 4px 2px;
+      transition: color 0.15s;
       white-space: nowrap;
     }
-    .hero-search .btn-all:hover { background: rgba(37,99,235,0.18); }
+    .all-btn:hover { color: #6b7280; }
 
-    /* ── 메인 컨텐츠 영역 ── */
-    .main-content {
+    /* ─────────────────────────────
+       BODY LAYOUT
+    ───────────────────────────── */
+    .page-body {
       max-width: 1100px;
-      margin: -24px auto 0;
-      padding: 0 24px 40px;
-      position: relative;
+      margin: 0 auto;
+      padding: 36px 24px 60px;
     }
 
-    /* ── 지도 섹션 ── */
-    .map-section {
+    /* ─────────────────────────────
+       지도 섹션
+    ───────────────────────────── */
+    .map-card {
       background: #fff;
-      border-radius: 16px;
+      border-radius: 18px;
       overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      margin-bottom: 32px;
-      border: 1px solid #e5e7eb;
+      border: 1px solid #e8edf5;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      margin-bottom: 36px;
     }
-    .map-section-header {
+    .map-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       padding: 14px 20px;
       border-bottom: 1px solid #f3f4f6;
+    }
+    .map-card-title {
       font-size: 0.88rem;
-      font-weight: 600;
-      color: #6b7280;
+      font-weight: 700;
+      color: #374151;
       display: flex;
       align-items: center;
       gap: 6px;
     }
+    .map-dot {
+      width: 8px; height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
+    }
 
-    /* ── 모임 목록 헤더 ── */
-    .list-header {
+    /* ─────────────────────────────
+       모임 목록 섹션
+    ───────────────────────────── */
+    .section-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 20px;
     }
-    .list-header-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #1f2937;
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.3px;
     }
-    .list-header-count {
+    .section-count {
       font-size: 0.85rem;
       color: #9ca3af;
+      font-weight: 500;
     }
 
-    /* ── 모임 카드 오버라이드 ── */
+    /* ─────────────────────────────
+       모임 카드
+    ───────────────────────────── */
+    .meeting-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 18px;
+    }
     .meeting-card {
-      border-radius: 16px !important;
-      border: none !important;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.07) !important;
-      transition: transform 0.2s, box-shadow 0.2s !important;
-      background: #fff !important;
-      overflow: hidden !important;
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #e8edf5;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+      display: flex;
+      flex-direction: column;
     }
     .meeting-card:hover {
-      transform: translateY(-4px) !important;
-      box-shadow: 0 12px 32px rgba(37,99,235,0.13) !important;
+      transform: translateY(-5px);
+      box-shadow: 0 16px 40px rgba(37,99,235,0.12);
+      border-color: #bfdbfe;
     }
-    .meeting-card .card-body {
-      padding: 20px !important;
-      gap: 8px !important;
-    }
-    .meeting-card-title {
-      font-size: 1rem !important;
-      font-weight: 700 !important;
-      margin-top: 6px;
-    }
-
-    /* 카드 상단 컬러바 */
-    .meeting-card::before {
-      content: '';
-      display: block;
+    /* 카드 상단 컬러 스트라이프 */
+    .card-stripe {
       height: 4px;
-      background: linear-gradient(90deg, #2563eb, #60a5fa);
+      background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+      flex-shrink: 0;
     }
-    .meeting-card.status-full::before {
-      background: linear-gradient(90deg, #f59e0b, #fcd34d);
+    .card-stripe.full   { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .card-stripe.closed { background: linear-gradient(90deg, #d1d5db, #e5e7eb); }
+
+    .card-inner { padding: 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
     }
-    .meeting-card.status-closed::before {
-      background: linear-gradient(90deg, #9ca3af, #d1d5db);
+    .meeting-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.45;
+      margin-top: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .meeting-addr {
+      font-size: 0.83rem;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid #f3f4f6;
+      margin-top: auto;
+    }
+    .card-count {
+      font-size: 0.83rem;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+    }
+    .card-author {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      background: #f9fafb;
+      padding: 3px 10px;
+      border-radius: 20px;
     }
 
-    /* ── 모임 만들기 FAB ── */
+    /* 배지 */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; display: block; }
+    .badge-open   { background: #ecfdf5; color: #065f46; }
+    .badge-open::before   { background: #10b981; }
+    .badge-full   { background: #fffbeb; color: #92400e; }
+    .badge-full::before   { background: #f59e0b; }
+    .badge-closed { background: #f3f4f6; color: #6b7280; }
+    .badge-closed::before { background: #9ca3af; }
+
+    /* ─────────────────────────────
+       모임 만들기 FAB
+    ───────────────────────────── */
     .fab {
       position: fixed;
-      bottom: 32px;
-      right: 32px;
-      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      bottom: 30px;
+      right: 30px;
+      background: #2563eb;
       color: #fff;
       border: none;
-      border-radius: 50px;
-      padding: 14px 24px;
-      font-size: 0.95rem;
-      font-weight: 600;
+      border-radius: 14px;
+      padding: 14px 22px;
+      font-size: 0.92rem;
+      font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 6px 24px rgba(37,99,235,0.4);
+      box-shadow: 0 8px 28px rgba(37,99,235,0.38);
       display: flex;
       align-items: center;
       gap: 8px;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: background 0.15s, transform 0.2s, box-shadow 0.2s;
       font-family: 'Noto Sans KR', sans-serif;
       z-index: 50;
+      letter-spacing: -0.2px;
     }
     .fab:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 32px rgba(37,99,235,0.5);
+      background: #1d4ed8;
+      transform: translateY(-3px);
+      box-shadow: 0 14px 36px rgba(37,99,235,0.46);
     }
 
-    /* ── 빈 상태 ── */
+    /* ─────────────────────────────
+       빈 상태
+    ───────────────────────────── */
     .empty-state {
+      text-align: center;
+      padding: 72px 20px;
       background: #fff;
-      border-radius: 16px;
-      padding: 60px 20px;
+      border-radius: 18px;
+      border: 1px dashed #d1d5db;
     }
+    .empty-state .icon { font-size: 2.8rem; margin-bottom: 14px; }
+    .empty-state p { font-size: 0.95rem; color: #9ca3af; }
 
+    /* ─────────────────────────────
+       반응형
+    ───────────────────────────── */
     @media (max-width: 640px) {
-      .hero { padding: 36px 16px 48px; }
-      .hero-title { font-size: 1.5rem; }
-      .main-content { padding: 0 16px 32px; }
-      .fab { bottom: 20px; right: 20px; padding: 12px 18px; }
+      .hero { padding: 40px 16px 36px; }
+      .hero-title { font-size: 1.65rem; }
+      .page-body { padding: 24px 16px 48px; }
+      .meeting-grid { grid-template-columns: 1fr; }
+      .fab { bottom: 20px; right: 16px; }
     }
   </style>
 </head>
@@ -215,53 +352,59 @@
   </div>
 </nav>
 
-<!-- 히어로 배너 + 검색 -->
+<!-- 히어로 -->
 <div class="hero">
   <div class="hero-inner">
-    <div class="hero-title">🗺️ 동네 모임 탐색</div>
-    <div class="hero-subtitle">우리 동네 모임을 찾고, 함께 즐거운 시간을 만들어요</div>
-    <div class="hero-search">
+    <div class="hero-eyebrow">🗺️ 동네 모임 플랫폼</div>
+    <h1 class="hero-title">우리 동네 <span>모임</span>을<br>찾아보세요</h1>
+    <p class="hero-sub">관심사가 같은 이웃과 함께하는 즐거운 시간</p>
+    <div class="search-wrap">
       <input type="text" id="keyword" placeholder="동네 이름으로 검색 (예: 마포구, 홍대)">
-      <button class="btn-search" onclick="search()">검색</button>
-      <button class="btn-all" onclick="loadAll()">전체</button>
+      <button class="all-btn" onclick="loadAll()">전체보기</button>
+      <button class="search-btn" onclick="search()">검색</button>
     </div>
   </div>
 </div>
 
-<div class="main-content">
+<!-- 본문 -->
+<div class="page-body">
 
   <!-- 지도 -->
-  <div class="map-section">
-    <div class="map-section-header">📍 모임 위치 지도</div>
-    <div id="map" style="width:100%;height:260px;"></div>
-  </div>
-
-  <!-- 모임 목록 헤더 -->
-  <div class="list-header">
-    <div class="list-header-title">전체 모임</div>
-    <div class="list-header-count" id="listCount"></div>
+  <div class="map-card">
+    <div class="map-card-header">
+      <div class="map-card-title">
+        <div class="map-dot"></div>
+        모임 위치
+      </div>
+    </div>
+    <div id="map" style="width:100%; height:260px;"></div>
   </div>
 
   <!-- 모임 목록 -->
+  <div class="section-header">
+    <div class="section-title">전체 모임</div>
+    <div class="section-count" id="listCount"></div>
+  </div>
+
   <div id="meetingGrid" class="meeting-grid">
-    <div th:each="m : ${list}"
-         th:classappend="${m.meetingStatus.name() == 'FULL'} ? ' status-full' : (${m.meetingStatus.name() == 'CLOSED'} ? ' status-closed' : '')"
-         class="card meeting-card"
+    <div th:each="m : ${list}" class="meeting-card"
          th:onclick="|location.href='/view/meetings/${m.meetingIdx}'|">
-      <div class="card-body">
-        <div>
+      <div th:classappend="${m.meetingStatus.name() == 'FULL'} ? 'full' : (${m.meetingStatus.name() == 'CLOSED'} ? 'closed' : '')"
+           class="card-stripe"></div>
+      <div class="card-inner">
+        <div class="card-top">
           <span th:classappend="${m.meetingStatus.name() == 'OPEN'} ? 'badge-open' : (${m.meetingStatus.name() == 'FULL'} ? 'badge-full' : 'badge-closed')"
                 class="badge" th:text="${m.meetingStatus.value}">모집중</span>
         </div>
-        <div class="meeting-card-title" th:text="${m.meetingTitle}">모임 제목</div>
-        <div class="meeting-card-address">
+        <div class="meeting-title" th:text="${m.meetingTitle}">모임 제목</div>
+        <div class="meeting-addr">
           📍 <span th:text="${m.meetingAddress != null ? m.meetingAddress : '위치 미지정'}">주소</span>
         </div>
-        <div class="meeting-card-footer">
-          <span class="meeting-card-count">
+        <div class="card-footer">
+          <span class="card-count">
             👥 <span th:text="${m.currentCount}">0</span> / <span th:text="${m.meetingMax}">0</span> 명
           </span>
-          <span class="meeting-card-author" th:text="${m.userNickname}">작성자</span>
+          <span class="card-author" th:text="${m.userNickname}">작성자</span>
         </div>
       </div>
     </div>
@@ -275,8 +418,8 @@
 
 </div>
 
-<!-- 모임 만들기 FAB -->
-<button class="fab" onclick="goWrite()">➕ 모임 만들기</button>
+<!-- FAB -->
+<button class="fab" onclick="goWrite()">+ 모임 만들기</button>
 
 <div class="toast-container" id="toastContainer"></div>
 
@@ -305,39 +448,35 @@
     location.href = '/view/meetings/write';
   }
 
-  // 목록 카운트 표시
+  // 목록 카운트
   const listCountEl = document.getElementById('listCount');
-  if (listCountEl) listCountEl.textContent = initList.length + '개의 모임';
+  if (listCountEl && initList.length > 0) listCountEl.textContent = initList.length + '개의 모임';
 
   // 카카오맵
   kakao.maps.load(function() {
     var container = document.getElementById('map');
-    var options = {
-      center: new kakao.maps.LatLng(37.5665, 126.9780),
-      level: 7
-    };
+    var options = { center: new kakao.maps.LatLng(37.5665, 126.9780), level: 7 };
     var map = new kakao.maps.Map(container, options);
-
-    initList.forEach(function (m) {
+    initList.forEach(function(m) {
       if (m.meetingLat && m.meetingLng) {
         var marker = new kakao.maps.Marker({
           map: map,
           position: new kakao.maps.LatLng(m.meetingLat, m.meetingLng),
           title: m.meetingTitle
         });
-        kakao.maps.event.addListener(marker, 'click', function () {
+        kakao.maps.event.addListener(marker, 'click', function() {
           location.href = '/view/meetings/' + m.meetingIdx;
         });
       }
     });
-  }); // kakao.maps.load 끝
+  });
 
   // 검색
   function search() {
     const keyword = document.getElementById('keyword').value.trim();
     if (!keyword) { showToast('검색어를 입력해주세요.', 'error'); return; }
     fetch(`/api/meetings/search?keyword=${encodeURIComponent(keyword)}`)
-    .then(r => r.json()).then(data => renderGrid(data));
+      .then(r => r.json()).then(data => renderGrid(data));
   }
   function loadAll() {
     document.getElementById('keyword').value = '';
@@ -347,24 +486,25 @@
 
   function renderGrid(data) {
     const grid = document.getElementById('meetingGrid');
-    if (listCountEl) listCountEl.textContent = data.length + '개의 모임';
+    if (listCountEl) listCountEl.textContent = data.length > 0 ? data.length + '개의 모임' : '';
     if (data.length === 0) {
       grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">🔍</div><p>검색 결과가 없어요.</p></div>';
       return;
     }
     grid.innerHTML = data.map(m => {
-      const badgeClass = m.meetingStatus === 'OPEN' ? 'badge-open' : (m.meetingStatus === 'FULL' ? 'badge-full' : 'badge-closed');
-      const statusText = m.meetingStatus === 'OPEN' ? '모집중' : (m.meetingStatus === 'FULL' ? '모집완료' : '종료');
-      const cardClass  = m.meetingStatus === 'FULL' ? 'status-full' : (m.meetingStatus === 'CLOSED' ? 'status-closed' : '');
+      const badgeClass  = m.meetingStatus === 'OPEN' ? 'badge-open' : (m.meetingStatus === 'FULL' ? 'badge-full' : 'badge-closed');
+      const statusText  = m.meetingStatus === 'OPEN' ? '모집중' : (m.meetingStatus === 'FULL' ? '모집완료' : '종료');
+      const stripeClass = m.meetingStatus === 'FULL' ? 'full' : (m.meetingStatus === 'CLOSED' ? 'closed' : '');
       return `
-        <div class="card meeting-card ${cardClass}" onclick="location.href='/view/meetings/${m.meetingIdx}'">
-          <div class="card-body">
-            <div><span class="badge ${badgeClass}">${statusText}</span></div>
-            <div class="meeting-card-title">${m.meetingTitle}</div>
-            <div class="meeting-card-address">📍 ${m.meetingAddress || '위치 미지정'}</div>
-            <div class="meeting-card-footer">
-              <span class="meeting-card-count">👥 ${m.currentCount} / ${m.meetingMax} 명</span>
-              <span class="meeting-card-author">${m.userNickname}</span>
+        <div class="meeting-card" onclick="location.href='/view/meetings/${m.meetingIdx}'">
+          <div class="card-stripe ${stripeClass}"></div>
+          <div class="card-inner">
+            <div class="card-top"><span class="badge ${badgeClass}">${statusText}</span></div>
+            <div class="meeting-title">${m.meetingTitle}</div>
+            <div class="meeting-addr">📍 ${m.meetingAddress || '위치 미지정'}</div>
+            <div class="card-footer">
+              <span class="card-count">👥 ${m.currentCount} / ${m.meetingMax} 명</span>
+              <span class="card-author">${m.userNickname}</span>
             </div>
           </div>
         </div>`;
