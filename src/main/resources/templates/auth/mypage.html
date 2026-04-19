@@ -5,6 +5,179 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>마이페이지 - LocalMeet</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    body { background: #f8faff; }
+
+    /* ─────────────────────────────
+       프로필 히어로
+    ───────────────────────────── */
+    .profile-hero {
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 60%, #3b82f6 100%);
+      padding: 48px 24px 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .profile-hero::before {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      top: -150px; right: -80px;
+      pointer-events: none;
+    }
+    .profile-hero::after {
+      content: '';
+      position: absolute;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      bottom: -100px; left: -40px;
+      pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; }
+
+    .avatar-wrap {
+      width: 88px; height: 88px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      border: 3px solid rgba(255,255,255,0.5);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.4rem;
+      margin: 0 auto 16px;
+      backdrop-filter: blur(6px);
+    }
+    .hero-nickname {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    .hero-email {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 12px;
+    }
+    .role-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.3);
+      letter-spacing: 0.2px;
+    }
+    .role-badge.admin {
+      background: rgba(251,191,36,0.25);
+      border-color: rgba(251,191,36,0.5);
+      color: #fef3c7;
+    }
+
+    /* ─────────────────────────────
+       메인 콘텐츠 (카드 올라오는 영역)
+    ───────────────────────────── */
+    .page-body {
+      max-width: 680px;
+      margin: -40px auto 0;
+      padding: 0 24px 60px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ─────────────────────────────
+       정보 카드
+    ───────────────────────────── */
+    .info-card {
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid #e8edf5;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .info-card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    .info-item {
+      padding: 20px 24px;
+    }
+    .info-item:first-child {
+      border-right: 1px solid #f3f4f6;
+    }
+    .info-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 6px;
+    }
+    .info-value {
+      font-size: 0.97rem;
+      font-weight: 600;
+      color: #111827;
+    }
+    .info-value.muted { color: #9ca3af; font-weight: 400; }
+
+    /* ─────────────────────────────
+       액션 카드
+    ───────────────────────────── */
+    .action-card {
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid #e8edf5;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .action-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-bottom: 1px solid #f9fafb;
+      text-decoration: none;
+      color: inherit;
+    }
+    .action-item:last-child { border-bottom: none; }
+    .action-item:hover { background: #f8faff; }
+    .action-item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .action-icon {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .action-icon.blue  { background: #eff6ff; }
+    .action-icon.red   { background: #fef2f2; }
+    .action-item-text  { font-size: 0.95rem; font-weight: 600; color: #111827; }
+    .action-item-sub   { font-size: 0.8rem; color: #9ca3af; margin-top: 1px; }
+    .action-arrow      { color: #d1d5db; font-size: 1.1rem; }
+    .action-item.danger .action-item-text { color: #ef4444; }
+    .action-item.danger .action-arrow     { color: #fca5a5; }
+
+  </style>
 </head>
 <body>
 
@@ -16,38 +189,58 @@
   </div>
 </nav>
 
-<div class="container">
-
-  <!-- 프로필 카드 -->
-  <div class="profile-card">
-    <div class="profile-avatar">🙋</div>
-    <div class="profile-info">
-      <h2 id="nickname">불러오는 중...</h2>
-      <p id="email"></p>
-      <span class="profile-badge" id="role"></span>
-    </div>
+<!-- 프로필 히어로 -->
+<div class="profile-hero">
+  <div class="hero-inner">
+    <div class="avatar-wrap">🙋</div>
+    <div class="hero-nickname" id="nickname">불러오는 중...</div>
+    <div class="hero-email" id="email"></div>
+    <span class="role-badge" id="role"></span>
   </div>
+</div>
 
-  <!-- 정보 카드 -->
-  <div class="card" style="margin-bottom:20px;">
-    <div class="card-body">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
-        <div>
-          <div class="form-label">내 동네</div>
-          <div id="address" style="font-size:0.95rem; color:var(--gray-800);">-</div>
-        </div>
-        <div>
-          <div class="form-label">가입일</div>
-          <div id="createdAt" style="font-size:0.95rem; color:var(--gray-800);">-</div>
-        </div>
+<!-- 본문 -->
+<div class="page-body">
+
+  <!-- 내 정보 -->
+  <div class="info-card">
+    <div class="info-card-header">내 정보</div>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">내 동네</div>
+        <div class="info-value" id="address">-</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">가입일</div>
+        <div class="info-value" id="createdAt">-</div>
       </div>
     </div>
   </div>
 
-  <div style="display:flex; gap:10px;">
-    <button class="btn btn-outline" onclick="location.href='/view/meetings/write'">➕ 모임 만들기</button>
-    <button class="btn btn-danger" onclick="logout()">로그아웃</button>
+  <!-- 액션 목록 -->
+  <div class="action-card">
+    <div class="action-item" onclick="location.href='/view/meetings/write'">
+      <div class="action-item-left">
+        <div class="action-icon blue">➕</div>
+        <div>
+          <div class="action-item-text">모임 만들기</div>
+          <div class="action-item-sub">새로운 동네 모임을 시작해보세요</div>
+        </div>
+      </div>
+      <div class="action-arrow">›</div>
+    </div>
+    <div class="action-item danger" onclick="logout()">
+      <div class="action-item-left">
+        <div class="action-icon red">🚪</div>
+        <div>
+          <div class="action-item-text">로그아웃</div>
+          <div class="action-item-sub">계정에서 안전하게 로그아웃합니다</div>
+        </div>
+      </div>
+      <div class="action-arrow">›</div>
+    </div>
   </div>
+
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -70,8 +263,19 @@
   .then(u => {
     document.getElementById('nickname').textContent  = u.userNickname;
     document.getElementById('email').textContent     = u.userEmail;
-    document.getElementById('role').textContent      = u.userRole === 'ROLE_ADMIN' ? '관리자' : '일반회원';
-    document.getElementById('address').textContent   = u.userAddress || '미설정';
+
+    const roleEl = document.getElementById('role');
+    if (u.userRole === 'ROLE_ADMIN') {
+      roleEl.textContent = '관리자';
+      roleEl.classList.add('admin');
+    } else {
+      roleEl.textContent = '일반회원';
+    }
+
+    const addrEl = document.getElementById('address');
+    addrEl.textContent = u.userAddress || '미설정';
+    if (!u.userAddress) addrEl.classList.add('muted');
+
     document.getElementById('createdAt').textContent = u.createdAt ? u.createdAt.substring(0, 10) : '-';
   });
 
