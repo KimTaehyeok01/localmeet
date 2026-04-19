@@ -5,6 +5,188 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>모임 수정 - LocalMeet</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    body { background: #f8faff; }
+
+    /* ─────────────────────────────
+       히어로
+    ───────────────────────────── */
+    .page-hero {
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 60%, #3b82f6 100%);
+      padding: 40px 24px 72px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      width: 360px; height: 360px; border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      top: -140px; right: -60px; pointer-events: none;
+    }
+    .page-hero::after {
+      content: '';
+      position: absolute;
+      width: 240px; height: 240px; border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+      bottom: -80px; left: -20px; pointer-events: none;
+    }
+    .hero-inner { position: relative; z-index: 1; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.9);
+      font-size: 0.8rem; font-weight: 600;
+      padding: 5px 14px; border-radius: 20px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .hero-title {
+      font-size: 1.8rem; font-weight: 800;
+      color: #fff; letter-spacing: -0.5px; margin-bottom: 6px;
+    }
+    .hero-sub { font-size: 0.9rem; color: rgba(255,255,255,0.72); }
+
+    /* ─────────────────────────────
+       폼 영역
+    ───────────────────────────── */
+    .page-body {
+      max-width: 680px;
+      margin: -36px auto 0;
+      padding: 0 24px 60px;
+      position: relative; z-index: 2;
+    }
+    .form-card {
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid #e8edf5;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .form-section { padding: 28px 28px 0; }
+    .form-section:last-of-type { padding-bottom: 28px; }
+    .form-section-title {
+      font-size: 0.75rem; font-weight: 700;
+      color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .form-section-title::after {
+      content: ''; flex: 1; height: 1px; background: #f3f4f6;
+    }
+
+    /* ─────────────────────────────
+       폼 요소
+    ───────────────────────────── */
+    .field { margin-bottom: 20px; }
+    .field-label {
+      display: block; font-size: 0.85rem; font-weight: 700;
+      color: #374151; margin-bottom: 8px;
+    }
+    .field-label .required { color: #2563eb; margin-left: 2px; }
+    .field-label .optional { font-size: 0.75rem; font-weight: 400; color: #9ca3af; margin-left: 6px; }
+
+    .field-input {
+      width: 100%; padding: 12px 16px;
+      border: 1.5px solid #e5e7eb; border-radius: 12px;
+      font-size: 0.95rem; font-family: 'Noto Sans KR', sans-serif;
+      color: #111827; background: #fff; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .field-input[readonly] { background: #f9fafb; cursor: pointer; }
+    textarea.field-input { resize: vertical; min-height: 130px; line-height: 1.7; }
+
+    .addr-row { display: flex; gap: 10px; }
+    .addr-row .field-input { flex: 1; }
+    .addr-btn {
+      background: #eff6ff; color: #2563eb;
+      border: 1.5px solid #bfdbfe; border-radius: 12px;
+      padding: 12px 18px; font-size: 0.87rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      white-space: nowrap; transition: background 0.15s;
+    }
+    .addr-btn:hover { background: #dbeafe; }
+
+    .number-input-wrap {
+      display: flex; align-items: center;
+      border: 1.5px solid #e5e7eb; border-radius: 12px;
+      overflow: hidden; width: fit-content;
+      transition: border-color 0.2s;
+    }
+    .number-input-wrap:focus-within { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .num-btn {
+      background: #f9fafb; border: none;
+      padding: 12px 18px; font-size: 1.1rem;
+      cursor: pointer; color: #6b7280; line-height: 1;
+      font-family: 'Noto Sans KR', sans-serif;
+      transition: background 0.15s, color 0.15s;
+    }
+    .num-btn:hover { background: #eff6ff; color: #2563eb; }
+    .num-display {
+      min-width: 64px; text-align: center;
+      font-size: 1.05rem; font-weight: 700; color: #111827;
+      border: none;
+      border-left: 1px solid #f3f4f6;
+      border-right: 1px solid #f3f4f6;
+      padding: 12px 8px;
+      font-family: 'Noto Sans KR', sans-serif; outline: none; background: #fff;
+    }
+
+    /* ─────────────────────────────
+       지도 미리보기
+    ───────────────────────────── */
+    .map-preview {
+      border-top: 1px solid #f3f4f6;
+      overflow: hidden;
+    }
+    .map-preview-label {
+      padding: 10px 28px;
+      font-size: 0.78rem; font-weight: 600;
+      color: #9ca3af; text-transform: uppercase; letter-spacing: 0.4px;
+      background: #fafafa;
+    }
+
+    /* ─────────────────────────────
+       하단 버튼
+    ───────────────────────────── */
+    .form-actions {
+      display: flex; gap: 12px;
+      padding: 20px 28px 28px;
+      border-top: 1px solid #f3f4f6;
+    }
+    .btn-submit {
+      flex: 1; background: #2563eb; color: #fff;
+      border: none; border-radius: 12px;
+      padding: 14px 24px;
+      font-size: 0.97rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-submit:hover {
+      background: #1d4ed8; transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+    }
+    .btn-cancel {
+      background: #f3f4f6; color: #6b7280;
+      border: none; border-radius: 12px;
+      padding: 14px 22px; font-size: 0.92rem; font-weight: 600;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      transition: background 0.15s;
+    }
+    .btn-cancel:hover { background: #e5e7eb; color: #374151; }
+
+    @media (max-width: 640px) {
+      .page-hero { padding: 32px 16px 60px; }
+      .hero-title { font-size: 1.5rem; }
+      .page-body { padding: 0 16px 48px; }
+      .form-section { padding: 20px 20px 0; }
+      .form-actions { padding: 16px 20px 20px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -16,61 +198,84 @@
   </div>
 </nav>
 
-<div class="container" style="max-width:680px;">
-
-  <div class="page-header">
-    <div>
-      <div class="page-title">모임 수정 ✏️</div>
-      <div class="page-subtitle">모임 정보를 수정하세요</div>
-    </div>
+<!-- 히어로 -->
+<div class="page-hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">✏️ 수정</div>
+    <div class="hero-title">모임 수정하기</div>
+    <div class="hero-sub">모임 정보를 업데이트하세요</div>
   </div>
+</div>
 
-  <div class="card">
-    <div class="card-body" style="padding:28px;">
+<!-- 폼 본문 -->
+<div class="page-body">
+  <div class="form-card">
 
-      <div class="form-group">
-        <label class="form-label">모임 제목 *</label>
-        <input type="text" id="meetingTitle" class="form-control" th:value="${dto.meetingTitle}">
+    <!-- 기본 정보 -->
+    <div class="form-section">
+      <div class="form-section-title">기본 정보</div>
+
+      <div class="field">
+        <label class="field-label">모임 제목 <span class="required">*</span></label>
+        <input type="text" id="meetingTitle" class="field-input" th:value="${dto.meetingTitle}">
       </div>
 
-      <div class="form-group">
-        <label class="form-label">모임 내용 *</label>
-        <textarea id="meetingContent" class="form-control" rows="5" th:text="${dto.meetingContent}"></textarea>
+      <div class="field">
+        <label class="field-label">모임 내용 <span class="required">*</span></label>
+        <textarea id="meetingContent" class="field-input" rows="5" th:text="${dto.meetingContent}"></textarea>
       </div>
+    </div>
 
-      <div class="form-group">
-        <label class="form-label">위치</label>
-        <div class="input-group">
-          <input type="text" id="meetingAddress" class="form-control" th:value="${dto.meetingAddress}" readonly>
-          <button class="btn btn-gray" onclick="searchAddress()">📍 변경</button>
+    <!-- 위치 -->
+    <div class="form-section">
+      <div class="form-section-title">위치</div>
+
+      <div class="field">
+        <label class="field-label">주소 <span class="optional">선택사항</span></label>
+        <div class="addr-row">
+          <input type="text" id="meetingAddress" class="field-input" th:value="${dto.meetingAddress}" readonly>
+          <button class="addr-btn" onclick="searchAddress()">📍 변경</button>
         </div>
         <input type="hidden" id="meetingLat" th:value="${dto.meetingLat}">
         <input type="hidden" id="meetingLng" th:value="${dto.meetingLng}">
       </div>
+    </div>
 
-      <div class="map-wrap" style="margin-bottom:18px;">
-        <div id="map" style="width:100%;height:220px;"></div>
-      </div>
+    <!-- 지도 미리보기 -->
+    <div class="map-preview">
+      <div class="map-preview-label">📍 위치 미리보기</div>
+      <div id="map" style="width:100%; height:220px;"></div>
+    </div>
 
-      <div class="form-group">
-        <label class="form-label">최대 인원 *</label>
-        <input type="number" id="meetingMax" class="form-control" min="2" th:value="${dto.meetingMax}" style="max-width:160px;">
-      </div>
+    <!-- 인원 -->
+    <div class="form-section" style="padding-bottom:28px;">
+      <div class="form-section-title">인원</div>
 
-      <div style="display:flex; gap:10px; margin-top:8px;">
-        <button class="btn btn-primary" style="flex:1;" onclick="updateMeeting()">수정 완료</button>
-        <button class="btn btn-gray" th:onclick="|location.href='/view/meetings/${dto.meetingIdx}'|">취소</button>
+      <div class="field" style="margin-bottom:0;">
+        <label class="field-label">최대 인원 <span class="required">*</span></label>
+        <div class="number-input-wrap">
+          <button class="num-btn" onclick="changeMax(-1)">−</button>
+          <input type="number" id="meetingMax" class="num-display" min="2" th:value="${dto.meetingMax}" readonly>
+          <button class="num-btn" onclick="changeMax(1)">+</button>
+        </div>
       </div>
     </div>
+
+    <!-- 액션 버튼 -->
+    <div class="form-actions">
+      <button class="btn-submit" onclick="updateMeeting()">수정 완료</button>
+      <button class="btn-cancel" th:onclick="|location.href='/view/meetings/${dto.meetingIdx}'|">취소</button>
+    </div>
+
   </div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
 
 <script th:inline="javascript">
-  const meetingIdx = /*[[${dto.meetingIdx}]]*/ 0;
-  const initLat    = /*[[${dto.meetingLat}]]*/ null;
-  const initLng    = /*[[${dto.meetingLng}]]*/ null;
+  const meetingIdx     = /*[[${dto.meetingIdx}]]*/ 0;
+  const initLat        = /*[[${dto.meetingLat}]]*/ null;
+  const initLng        = /*[[${dto.meetingLng}]]*/ null;
   const kakaoMapApiKey = /*[[${kakaoMapApiKey}]]*/ '';
 </script>
 <script th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoMapApiKey} + '&libraries=services'}"></script>
@@ -80,8 +285,15 @@
   if (!token) { alert('로그인이 필요합니다.'); location.href = '/view/login'; }
 
   function showToast(msg, type='') {
-    const c=document.getElementById('toastContainer'), t=document.createElement('div');
-    t.className='toast '+type; t.textContent=msg; c.appendChild(t); setTimeout(()=>t.remove(),3000);
+    const c = document.getElementById('toastContainer'), t = document.createElement('div');
+    t.className = 'toast ' + type; t.textContent = msg; c.appendChild(t); setTimeout(() => t.remove(), 3000);
+  }
+
+  // 인원 +/- 조작
+  function changeMax(delta) {
+    const el = document.getElementById('meetingMax');
+    const val = parseInt(el.value) + delta;
+    if (val >= 2 && val <= 100) el.value = val;
   }
 
   let map, marker, geocoder;
@@ -129,7 +341,7 @@
 
     fetch(`/api/meetings/${meetingIdx}/update`, {
       method: 'POST',
-      headers: { 'Content-Type':'application/x-www-form-urlencoded', 'JWT_TOKEN': token },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'JWT_TOKEN': token },
       body: params.toString()
     })
     .then(r => r.json())
