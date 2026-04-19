@@ -5,6 +5,159 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>로그인 - LocalMeet</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    body {
+      background: #f8faff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─────────────────────────────
+       전체 레이아웃
+    ───────────────────────────── */
+    .login-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+    .login-box {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* ─────────────────────────────
+       로고 + 타이틀 영역
+    ───────────────────────────── */
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .login-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      border-radius: 16px;
+      font-size: 1.6rem;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+    }
+    .login-title {
+      font-size: 1.6rem; font-weight: 800;
+      color: #111827; letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    .login-sub {
+      font-size: 0.9rem; color: #9ca3af;
+    }
+
+    /* ─────────────────────────────
+       카드
+    ───────────────────────────── */
+    .login-card {
+      background: #fff;
+      border-radius: 24px;
+      border: 1px solid #e8edf5;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+      padding: 32px;
+    }
+
+    /* ─────────────────────────────
+       소셜 버튼
+    ───────────────────────────── */
+    .social-btn {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; width: 100%;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-size: 0.93rem; font-weight: 700;
+      cursor: pointer; text-decoration: none;
+      border: none;
+      transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+      font-family: 'Noto Sans KR', sans-serif;
+      margin-bottom: 10px;
+    }
+    .social-btn:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .social-btn:last-of-type { margin-bottom: 0; }
+    .social-kakao { background: #FEE500; color: #191919; }
+    .social-naver { background: #03C75A; color: #fff; }
+
+    /* ─────────────────────────────
+       구분선
+    ───────────────────────────── */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: #f3f4f6;
+    }
+    .divider span {
+      font-size: 0.8rem; color: #9ca3af; font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* ─────────────────────────────
+       폼 요소
+    ───────────────────────────── */
+    .field { margin-bottom: 16px; }
+    .field-label {
+      display: block; font-size: 0.83rem; font-weight: 700;
+      color: #374151; margin-bottom: 7px;
+    }
+    .field-input {
+      width: 100%; padding: 12px 16px;
+      border: 1.5px solid #e5e7eb; border-radius: 12px;
+      font-size: 0.95rem; font-family: 'Noto Sans KR', sans-serif;
+      color: #111827; background: #fff; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .field-input::placeholder { color: #d1d5db; }
+
+    /* ─────────────────────────────
+       로그인 버튼
+    ───────────────────────────── */
+    .btn-login {
+      width: 100%; padding: 14px;
+      background: #2563eb; color: #fff;
+      border: none; border-radius: 12px;
+      font-size: 0.97rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      margin-top: 4px;
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+      letter-spacing: -0.2px;
+    }
+    .btn-login:hover {
+      background: #1d4ed8; transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+    }
+
+    /* ─────────────────────────────
+       하단 링크
+    ───────────────────────────── */
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 0.88rem; color: #9ca3af;
+    }
+    .login-footer a {
+      color: #2563eb; font-weight: 700;
+      text-decoration: none; margin-left: 4px;
+    }
+    .login-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 480px) {
+      .login-card { padding: 24px 20px; border-radius: 20px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -12,45 +165,55 @@
   <a class="navbar-brand" href="/view/meetings">Local<span>Meet</span></a>
 </nav>
 
-<div class="container-sm">
-  <div class="auth-card">
-    <div class="auth-title">다시 만나요 👋</div>
-    <div class="auth-subtitle">LocalMeet에 로그인하세요</div>
+<div class="login-wrap">
+  <div class="login-box">
 
-    <!-- 소셜 로그인 버튼 -->
-    <a href="/oauth2/authorization/kakao"
-       class="btn btn-full"
-       style="background:#FEE500;color:#000;justify-content:center;display:flex;align-items:center;gap:10px;margin-bottom:10px;border-radius:8px;padding:13px;font-weight:500;text-decoration:none;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.7 1.68 5.07 4.2 6.48L5.1 21l4.62-2.4c.75.15 1.53.24 2.28.24 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/>
-      </svg>
-      카카오로 로그인
-    </a>
-    <a href="/oauth2/authorization/naver"
-       class="btn btn-full"
-       style="background:#03C75A;color:#fff;justify-content:center;display:flex;align-items:center;gap:10px;margin-bottom:20px;border-radius:8px;padding:13px;font-weight:500;text-decoration:none;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-        <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/>
-      </svg>
-      네이버로 로그인
-    </a>
-
-    <div class="auth-divider">또는 이메일로 로그인</div>
-
-    <div class="form-group">
-      <label class="form-label">이메일</label>
-      <input type="email" id="userEmail" class="form-control" placeholder="이메일 입력">
-    </div>
-    <div class="form-group">
-      <label class="form-label">비밀번호</label>
-      <input type="password" id="userPassword" class="form-control" placeholder="비밀번호 입력">
+    <!-- 헤더 -->
+    <div class="login-header">
+      <div class="login-logo">👋</div>
+      <div class="login-title">다시 만나요!</div>
+      <div class="login-sub">LocalMeet에 로그인하세요</div>
     </div>
 
-    <button class="btn btn-primary btn-full" onclick="login()">로그인</button>
+    <!-- 카드 -->
+    <div class="login-card">
 
-    <div class="auth-footer">
-      계정이 없으신가요? <a href="/view/signup">회원가입</a>
+      <!-- 소셜 로그인 -->
+      <a href="/oauth2/authorization/kakao" class="social-btn social-kakao">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3C6.48 3 2 6.48 2 10.8c0 2.7 1.68 5.07 4.2 6.48L5.1 21l4.62-2.4c.75.15 1.53.24 2.28.24 5.52 0 10-3.48 10-7.8S17.52 3 12 3z"/>
+        </svg>
+        카카오로 로그인
+      </a>
+      <a href="/oauth2/authorization/naver" class="social-btn social-naver">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+          <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/>
+        </svg>
+        네이버로 로그인
+      </a>
+
+      <!-- 구분선 -->
+      <div class="divider"><span>또는 이메일로 로그인</span></div>
+
+      <!-- 이메일 로그인 폼 -->
+      <div class="field">
+        <label class="field-label">이메일</label>
+        <input type="email" id="userEmail" class="field-input" placeholder="이메일을 입력하세요">
+      </div>
+      <div class="field">
+        <label class="field-label">비밀번호</label>
+        <input type="password" id="userPassword" class="field-input" placeholder="비밀번호를 입력하세요">
+      </div>
+
+      <button class="btn-login" onclick="login()">로그인</button>
     </div>
+
+    <!-- 회원가입 링크 -->
+    <div class="login-footer">
+      아직 계정이 없으신가요?
+      <a href="/view/signup">회원가입</a>
+    </div>
+
   </div>
 </div>
 
