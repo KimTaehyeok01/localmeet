@@ -5,6 +5,165 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>회원가입 - LocalMeet</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    body {
+      background: #f8faff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─────────────────────────────
+       전체 레이아웃
+    ───────────────────────────── */
+    .signup-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+    .signup-box {
+      width: 100%;
+      max-width: 440px;
+    }
+
+    /* ─────────────────────────────
+       헤더
+    ───────────────────────────── */
+    .signup-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .signup-logo {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      border-radius: 16px; font-size: 1.6rem;
+      margin-bottom: 16px;
+      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+    }
+    .signup-title {
+      font-size: 1.6rem; font-weight: 800;
+      color: #111827; letter-spacing: -0.5px; margin-bottom: 6px;
+    }
+    .signup-sub { font-size: 0.9rem; color: #9ca3af; }
+
+    /* ─────────────────────────────
+       카드
+    ───────────────────────────── */
+    .signup-card {
+      background: #fff;
+      border-radius: 24px;
+      border: 1px solid #e8edf5;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+      padding: 32px;
+    }
+
+    /* ─────────────────────────────
+       섹션 구분
+    ───────────────────────────── */
+    .form-section-label {
+      font-size: 0.72rem; font-weight: 700;
+      color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 16px; margin-top: 8px;
+    }
+    .form-section-label:first-child { margin-top: 0; }
+    .form-section-label::after {
+      content: ''; flex: 1; height: 1px; background: #f3f4f6;
+    }
+
+    /* ─────────────────────────────
+       폼 요소
+    ───────────────────────────── */
+    .field { margin-bottom: 14px; }
+    .field-label {
+      display: block; font-size: 0.83rem; font-weight: 700;
+      color: #374151; margin-bottom: 7px;
+    }
+    .field-label .required { color: #2563eb; margin-left: 2px; }
+    .field-label .optional { font-size: 0.75rem; font-weight: 400; color: #9ca3af; margin-left: 6px; }
+
+    .field-input {
+      width: 100%; padding: 12px 16px;
+      border: 1.5px solid #e5e7eb; border-radius: 12px;
+      font-size: 0.95rem; font-family: 'Noto Sans KR', sans-serif;
+      color: #111827; background: #fff; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .field-input::placeholder { color: #d1d5db; }
+    .field-input[readonly] { background: #f9fafb; cursor: pointer; }
+
+    /* 인풋 + 버튼 그룹 */
+    .input-row { display: flex; gap: 8px; }
+    .input-row .field-input { flex: 1; }
+    .check-btn {
+      background: #eff6ff; color: #2563eb;
+      border: 1.5px solid #bfdbfe; border-radius: 12px;
+      padding: 12px 14px; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .check-btn:hover { background: #dbeafe; border-color: #93c5fd; }
+
+    .addr-btn {
+      background: #f3f4f6; color: #6b7280;
+      border: 1.5px solid #e5e7eb; border-radius: 12px;
+      padding: 12px 14px; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .addr-btn:hover { background: #e5e7eb; }
+
+    /* 힌트 텍스트 */
+    .field-hint {
+      font-size: 0.78rem; color: #9ca3af;
+      margin-top: 5px; padding-left: 2px;
+    }
+
+    /* ─────────────────────────────
+       가입 버튼
+    ───────────────────────────── */
+    .btn-signup {
+      width: 100%; padding: 14px;
+      background: #2563eb; color: #fff;
+      border: none; border-radius: 12px;
+      font-size: 0.97rem; font-weight: 700;
+      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+      margin-top: 20px;
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+      letter-spacing: -0.2px;
+    }
+    .btn-signup:hover {
+      background: #1d4ed8; transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+    }
+
+    /* ─────────────────────────────
+       하단 링크
+    ───────────────────────────── */
+    .signup-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 0.88rem; color: #9ca3af;
+    }
+    .signup-footer a {
+      color: #2563eb; font-weight: 700;
+      text-decoration: none; margin-left: 4px;
+    }
+    .signup-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 480px) {
+      .signup-card { padding: 24px 20px; border-radius: 20px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -12,47 +171,68 @@
   <a class="navbar-brand" href="/view/meetings">Local<span>Meet</span></a>
 </nav>
 
-<div class="container-sm">
-  <div class="auth-card">
-    <div class="auth-title">함께 시작해요 🗺️</div>
-    <div class="auth-subtitle">LocalMeet에 가입하고 동네 모임을 찾아보세요</div>
+<div class="signup-wrap">
+  <div class="signup-box">
 
-    <div class="form-group">
-      <label class="form-label">이메일</label>
-      <div class="input-group">
-        <input type="email" id="userEmail" class="form-control" placeholder="이메일 입력">
-        <button class="btn btn-outline" onclick="checkEmail()">중복확인</button>
+    <!-- 헤더 -->
+    <div class="signup-header">
+      <div class="signup-logo">🗺️</div>
+      <div class="signup-title">함께 시작해요!</div>
+      <div class="signup-sub">LocalMeet에 가입하고 동네 모임을 찾아보세요</div>
+    </div>
+
+    <!-- 카드 -->
+    <div class="signup-card">
+
+      <!-- 계정 정보 -->
+      <div class="form-section-label">계정 정보</div>
+
+      <div class="field">
+        <label class="field-label">이메일 <span class="required">*</span></label>
+        <div class="input-row">
+          <input type="email" id="userEmail" class="field-input" placeholder="example@email.com">
+          <button class="check-btn" onclick="checkEmail()">중복확인</button>
+        </div>
       </div>
-    </div>
 
-    <div class="form-group">
-      <label class="form-label">비밀번호</label>
-      <input type="password" id="userPassword" class="form-control" placeholder="4자 이상">
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">닉네임</label>
-      <div class="input-group">
-        <input type="text" id="userNickname" class="form-control" placeholder="2~10자">
-        <button class="btn btn-outline" onclick="checkNickname()">중복확인</button>
+      <div class="field">
+        <label class="field-label">비밀번호 <span class="required">*</span></label>
+        <input type="password" id="userPassword" class="field-input" placeholder="4자 이상 입력하세요">
       </div>
-    </div>
 
-    <div class="form-group">
-      <label class="form-label">내 동네</label>
-      <div class="input-group">
-        <input type="text" id="userAddress" class="form-control" placeholder="주소 검색 (선택)" readonly>
-        <button class="btn btn-gray" onclick="searchAddress()">검색</button>
+      <!-- 프로필 정보 -->
+      <div class="form-section-label" style="margin-top:20px;">프로필</div>
+
+      <div class="field">
+        <label class="field-label">닉네임 <span class="required">*</span></label>
+        <div class="input-row">
+          <input type="text" id="userNickname" class="field-input" placeholder="2~10자로 입력하세요">
+          <button class="check-btn" onclick="checkNickname()">중복확인</button>
+        </div>
       </div>
-      <input type="hidden" id="userLat">
-      <input type="hidden" id="userLng">
+
+      <div class="field">
+        <label class="field-label">내 동네 <span class="optional">선택사항</span></label>
+        <div class="input-row">
+          <input type="text" id="userAddress" class="field-input" placeholder="주소를 검색해보세요" readonly>
+          <button class="addr-btn" onclick="searchAddress()">📍 검색</button>
+        </div>
+        <input type="hidden" id="userLat">
+        <input type="hidden" id="userLng">
+        <div class="field-hint">내 동네를 설정하면 주변 모임을 더 잘 찾을 수 있어요</div>
+      </div>
+
+      <!-- 가입 버튼 -->
+      <button class="btn-signup" onclick="signup()">가입하기</button>
+
     </div>
 
-    <button class="btn btn-primary btn-full" onclick="signup()">가입하기</button>
-
-    <div class="auth-footer">
-      이미 계정이 있으신가요? <a href="/view/login">로그인</a>
+    <!-- 로그인 링크 -->
+    <div class="signup-footer">
+      이미 계정이 있으신가요?
+      <a href="/view/login">로그인</a>
     </div>
+
   </div>
 </div>
 
