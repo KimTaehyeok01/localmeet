@@ -5,6 +5,206 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>모임 목록 - LocalMeet</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    body { background: #f0f4ff; }
+
+    /* ── 히어로 배너 ── */
+    .hero {
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+      padding: 48px 24px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-inner { position: relative; max-width: 600px; margin: 0 auto; }
+    .hero-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+    .hero-subtitle {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.78);
+      margin-bottom: 28px;
+    }
+
+    /* ── 검색바 (히어로 안) ── */
+    .hero-search {
+      display: flex;
+      gap: 0;
+      background: #fff;
+      border-radius: 50px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .hero-search input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 14px 20px;
+      font-size: 0.95rem;
+      font-family: 'Noto Sans KR', sans-serif;
+      background: transparent;
+    }
+    .hero-search .btn-search {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 14px 22px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif;
+      transition: background 0.15s;
+    }
+    .hero-search .btn-search:hover { background: #1d4ed8; }
+    .hero-search .btn-all {
+      background: rgba(37,99,235,0.1);
+      color: #2563eb;
+      border: none;
+      border-left: 1px solid #e5e7eb;
+      padding: 14px 16px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .hero-search .btn-all:hover { background: rgba(37,99,235,0.18); }
+
+    /* ── 메인 컨텐츠 영역 ── */
+    .main-content {
+      max-width: 1100px;
+      margin: -24px auto 0;
+      padding: 0 24px 40px;
+      position: relative;
+    }
+
+    /* ── 지도 섹션 ── */
+    .map-section {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      margin-bottom: 32px;
+      border: 1px solid #e5e7eb;
+    }
+    .map-section-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── 모임 목록 헤더 ── */
+    .list-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .list-header-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1f2937;
+    }
+    .list-header-count {
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+
+    /* ── 모임 카드 오버라이드 ── */
+    .meeting-card {
+      border-radius: 16px !important;
+      border: none !important;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07) !important;
+      transition: transform 0.2s, box-shadow 0.2s !important;
+      background: #fff !important;
+      overflow: hidden !important;
+    }
+    .meeting-card:hover {
+      transform: translateY(-4px) !important;
+      box-shadow: 0 12px 32px rgba(37,99,235,0.13) !important;
+    }
+    .meeting-card .card-body {
+      padding: 20px !important;
+      gap: 8px !important;
+    }
+    .meeting-card-title {
+      font-size: 1rem !important;
+      font-weight: 700 !important;
+      margin-top: 6px;
+    }
+
+    /* 카드 상단 컬러바 */
+    .meeting-card::before {
+      content: '';
+      display: block;
+      height: 4px;
+      background: linear-gradient(90deg, #2563eb, #60a5fa);
+    }
+    .meeting-card.status-full::before {
+      background: linear-gradient(90deg, #f59e0b, #fcd34d);
+    }
+    .meeting-card.status-closed::before {
+      background: linear-gradient(90deg, #9ca3af, #d1d5db);
+    }
+
+    /* ── 모임 만들기 FAB ── */
+    .fab {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 24px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(37,99,235,0.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-family: 'Noto Sans KR', sans-serif;
+      z-index: 50;
+    }
+    .fab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(37,99,235,0.5);
+    }
+
+    /* ── 빈 상태 ── */
+    .empty-state {
+      background: #fff;
+      border-radius: 16px;
+      padding: 60px 20px;
+    }
+
+    @media (max-width: 640px) {
+      .hero { padding: 36px 16px 48px; }
+      .hero-title { font-size: 1.5rem; }
+      .main-content { padding: 0 16px 32px; }
+      .fab { bottom: 20px; right: 20px; padding: 12px 18px; }
+    }
+  </style>
 </head>
 <body>
 
@@ -15,36 +215,41 @@
   </div>
 </nav>
 
-<div class="container">
-
-  <!-- 헤더 -->
-  <div class="page-header">
-    <div>
-      <div class="page-title">동네 모임 탐색 🗺️</div>
-      <div class="page-subtitle">우리 동네 모임을 찾아보세요</div>
+<!-- 히어로 배너 + 검색 -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-title">🗺️ 동네 모임 탐색</div>
+    <div class="hero-subtitle">우리 동네 모임을 찾고, 함께 즐거운 시간을 만들어요</div>
+    <div class="hero-search">
+      <input type="text" id="keyword" placeholder="동네 이름으로 검색 (예: 마포구, 홍대)">
+      <button class="btn-search" onclick="search()">검색</button>
+      <button class="btn-all" onclick="loadAll()">전체</button>
     </div>
-    <button class="btn btn-primary" onclick="goWrite()">➕ 모임 만들기</button>
   </div>
+</div>
 
-  <!-- 검색바 -->
-  <div class="search-bar">
-    <span style="color:var(--gray-400);">🔍</span>
-    <input type="text" id="keyword" placeholder="동네 이름으로 검색 (예: 마포구, 홍대)">
-    <button onclick="search()">검색</button>
-    <button onclick="loadAll()" style="color:var(--gray-400);">전체</button>
-  </div>
+<div class="main-content">
 
   <!-- 지도 -->
-  <div class="map-wrap" style="margin-bottom:24px;">
-    <div id="map" style="width:100%;height:280px;"></div>
+  <div class="map-section">
+    <div class="map-section-header">📍 모임 위치 지도</div>
+    <div id="map" style="width:100%;height:260px;"></div>
+  </div>
+
+  <!-- 모임 목록 헤더 -->
+  <div class="list-header">
+    <div class="list-header-title">전체 모임</div>
+    <div class="list-header-count" id="listCount"></div>
   </div>
 
   <!-- 모임 목록 -->
   <div id="meetingGrid" class="meeting-grid">
-    <div th:each="m : ${list}" class="card meeting-card"
+    <div th:each="m : ${list}"
+         th:classappend="${m.meetingStatus.name() == 'FULL'} ? ' status-full' : (${m.meetingStatus.name() == 'CLOSED'} ? ' status-closed' : '')"
+         class="card meeting-card"
          th:onclick="|location.href='/view/meetings/${m.meetingIdx}'|">
       <div class="card-body">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div>
           <span th:classappend="${m.meetingStatus.name() == 'OPEN'} ? 'badge-open' : (${m.meetingStatus.name() == 'FULL'} ? 'badge-full' : 'badge-closed')"
                 class="badge" th:text="${m.meetingStatus.value}">모집중</span>
         </div>
@@ -69,6 +274,9 @@
   </div>
 
 </div>
+
+<!-- 모임 만들기 FAB -->
+<button class="fab" onclick="goWrite()">➕ 모임 만들기</button>
 
 <div class="toast-container" id="toastContainer"></div>
 
@@ -96,6 +304,10 @@
     if (!token) { showToast('로그인이 필요합니다.', 'error'); setTimeout(() => location.href='/view/login', 800); return; }
     location.href = '/view/meetings/write';
   }
+
+  // 목록 카운트 표시
+  const listCountEl = document.getElementById('listCount');
+  if (listCountEl) listCountEl.textContent = initList.length + '개의 모임';
 
   // 카카오맵
   kakao.maps.load(function() {
@@ -135,6 +347,7 @@
 
   function renderGrid(data) {
     const grid = document.getElementById('meetingGrid');
+    if (listCountEl) listCountEl.textContent = data.length + '개의 모임';
     if (data.length === 0) {
       grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">🔍</div><p>검색 결과가 없어요.</p></div>';
       return;
@@ -142,8 +355,9 @@
     grid.innerHTML = data.map(m => {
       const badgeClass = m.meetingStatus === 'OPEN' ? 'badge-open' : (m.meetingStatus === 'FULL' ? 'badge-full' : 'badge-closed');
       const statusText = m.meetingStatus === 'OPEN' ? '모집중' : (m.meetingStatus === 'FULL' ? '모집완료' : '종료');
+      const cardClass  = m.meetingStatus === 'FULL' ? 'status-full' : (m.meetingStatus === 'CLOSED' ? 'status-closed' : '');
       return `
-        <div class="card meeting-card" onclick="location.href='/view/meetings/${m.meetingIdx}'">
+        <div class="card meeting-card ${cardClass}" onclick="location.href='/view/meetings/${m.meetingIdx}'">
           <div class="card-body">
             <div><span class="badge ${badgeClass}">${statusText}</span></div>
             <div class="meeting-card-title">${m.meetingTitle}</div>
