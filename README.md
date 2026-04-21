@@ -358,6 +358,78 @@ http://localhost:8080
 
 ---
 
+## 🔥 트러블슈팅
+
+프로젝트를 진행하면서 겪은 주요 이슈와 해결 과정을 기록합니다.
+
+---
+
+### 1. WebSocket 채팅 — Spring Security 필터 미적용으로 인한 인증 누락
+
+**문제 상황**
+
+모임 상세 페이지의 채팅 기능에서 JWT 토큰이 없는 미인증 사용자도 메시지를 전송할 수 있었습니다.
+로그인 여부와 관계없이 채팅이 가능한 보안 취약점이 존재했습니다.
+
+**원인 분석**
+
+Spring Security 필터 체인은 일반 HTTP 요청에만 적용되며, WebSocket은 HTTP 업그레이드 방식으로 연결되기 때문에
+핸드셰이크 이후의 STOMP 메시지 처리에는 Security 필터가 적용되지 않습니다.
+즉, `JwtAuthenticationFilter`가 WebSocket 메시지를 가로채지 못해 인증 없이도 메시지 전송이 가능했습니다.
+
+**해결**
+
+클라이언트에서 STOMP 연결 시 헤더에 JWT 토큰을 직접 포함하도록 수정하고,
+`ChatController`에서 메시지 수신 시 `JwtUtil`로 토큰을 직접 검증하는 방식으로 처리했습니다.
+
+```java
+// ChatController.java — STOMP 헤더에서 JWT 추출 후 직접 검증
+String token = accessor.getFirstNativeHeader("Authorization").substring(7);
+if (!jwtUtil.validateToken(token)) throw new RuntimeException("Unauthorized");
+String email = jwtUtil.getEmail(token);
+```
+
+**배운 점**
+
+WebSocket은 Spring Security의 보호 범위 밖에 있다는 것을 직접 경험했습니다.
+HTTP 기반 필터에만 의존하지 않고, 프로토콜 특성에 맞는 별도 인증 처리가 필요하다는 것을 이해하게 되었습니다.
+
+---
+
+### 2. JWT Stateless 특성으로 인한 권한 변경 미반영
+
+**문제 상황**
+
+DB에서 특정 사용자의 권한을 `ROLE_USER → ROLE_ADMIN`으로 변경했음에도,
+해당 사용자가 로그인한 상태에서 관리자 버튼이 화면에 표시되지 않았습니다.
+로그아웃 후 재로그인하자 정상적으로 반영되었습니다.
+
+**원인 분석**
+
+JWT는 로그인 시점에 사용자 정보(이메일, 권한 등)를 담아 발급되는 Stateless 토큰입니다.
+서버는 매 요청마다 DB를 조회하지 않고 토큰에 담긴 정보로만 인증을 처리하기 때문에,
+DB에서 권한을 변경해도 **기존에 발급된 토큰이 만료되기 전까지는 변경 사항이 반영되지 않습니다.**
+
+```
+로그인 시 발급된 토큰: { email: "user@test.com", role: "ROLE_USER" }
+                                                         ↑
+                               DB를 ROLE_ADMIN으로 바꿔도 토큰은 그대로
+```
+
+**해결**
+
+재로그인을 통해 새 토큰을 발급받는 것으로 해결했습니다.
+근본적으로는 JWT의 Stateless 특성상 즉각적인 권한 반영이 필요한 경우 토큰 만료 시간을 짧게 설정하거나,
+Redis를 활용한 토큰 블랙리스트 방식을 도입하는 것이 적절합니다.
+
+**배운 점**
+
+JWT의 Stateless 특성이 편리함을 주지만, 권한 변경이나 강제 로그아웃 같은 상황에서는
+별도의 처리가 필요하다는 것을 실제로 경험했습니다.
+보안 요구사항에 따라 Stateless 방식과 서버 사이드 세션 방식의 트레이드오프를 고려해야 함을 배웠습니다.
+
+---
+
 ## 🔑 테스트 계정
 
 | 이메일 | 비밀번호 | 권한 |
