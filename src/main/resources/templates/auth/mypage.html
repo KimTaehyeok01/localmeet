@@ -5,178 +5,394 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>마이페이지 - LocalMeet</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <style>
-    body { background: #f8faff; }
+    :root{
+      --bg: #F4FAFE;
+      --surface: #FFFFFF;
+      --surface-2: #EBF4FB;
+      --surface-3: #DCEBF7;
+      --ink: #0B2036;
+      --ink-2: #264766;
+      --muted: #6B8AA8;
+      --muted-2: #A6BED4;
+      --line: #D7E6F2;
+      --line-strong: #B9CFE3;
+      --accent: #1FA6D6;
+      --accent-2: #7DD4C0;
+      --accent-3: #B8A6FF;
+      --accent-4: #FFD447;
+      --ok: #2CCB86;
+      --warn: #FF8A4C;
+      --danger: #FF5D78;
+      --radius: 16px;
+      --radius-lg: 22px;
+      --radius-xl: 32px;
+      --shadow-1: 0 1px 2px rgba(11,32,54,.05);
+      --shadow-2: 0 4px 16px -6px rgba(31,166,214,.18), 0 1px 3px rgba(11,32,54,.05);
+      --shadow-3: 0 20px 48px -16px rgba(31,166,214,.28), 0 2px 6px rgba(11,32,54,.06);
+      --font-kr: 'Pretendard', system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+      --font-serif: 'Instrument Serif', ui-serif, serif;
+      --font-en: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
 
-    /* ─────────────────────────────
-       프로필 히어로
-    ───────────────────────────── */
-    .profile-hero {
-      background: linear-gradient(135deg, #1e40af 0%, #2563eb 60%, #3b82f6 100%);
-      padding: 48px 24px 80px;
-      text-align: center;
+    *{ box-sizing: border-box; }
+    html, body{ height: 100%; }
+    body{
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-kr);
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
+    }
+
+    body::before{
+      content:'';
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(55vw 50vh at 90% -10%, rgba(125,212,192,.42), transparent 60%),
+        radial-gradient(50vw 55vh at -8% 20%, rgba(184,166,255,.35), transparent 60%),
+        radial-gradient(45vw 50vh at 50% 110%, rgba(31,166,214,.2), transparent 60%);
+    }
+    body::after{
+      content:'';
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: .3;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.06 0 0 0 0 0.13 0 0 0 0 0.21 0 0 0 0.04 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    }
+    body > *{ position: relative; z-index: 1; }
+
+    .navbar{
+      position: sticky; top: 14px; z-index: 30;
+      max-width: 1240px;
+      margin: 14px auto 0;
+      width: calc(100% - 28px);
+      background: color-mix(in oklab, var(--surface) 82%, transparent);
+      backdrop-filter: saturate(1.3) blur(18px);
+      -webkit-backdrop-filter: saturate(1.3) blur(18px);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px 10px 22px;
+      box-shadow: var(--shadow-1);
+    }
+    .navbar-brand{
+      font-weight: 700; font-size: 18px;
+      color: var(--ink); text-decoration: none;
+      letter-spacing: -0.02em;
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .navbar-brand::before{
+      content:''; width: 26px; height: 26px; border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255,255,255,.85), transparent 50%),
+        conic-gradient(from 200deg, var(--accent), var(--accent-2) 45%, var(--accent-3) 72%, var(--accent-4) 100%);
+      box-shadow: 0 2px 8px -2px rgba(31,166,214,.4);
+    }
+    .navbar-brand span{
+      background: linear-gradient(90deg, var(--accent), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .navbar-menu{ display: flex; align-items: center; gap: 6px; }
+    .navbar-menu a{
+      padding: 8px 14px;
+      font-size: 14px;
+      color: var(--ink-2);
+      text-decoration: none;
+      border-radius: 999px;
+      transition: background .15s, color .15s;
+      font-weight: 500;
+    }
+    .navbar-menu a:hover{ color: var(--accent); background: var(--surface-2); }
+    .btn-primary-sm{
+      padding: 9px 18px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), #0E8AB8);
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform .15s, filter .15s, box-shadow .15s;
+      box-shadow: 0 4px 14px -4px rgba(31,166,214,.5);
+    }
+    .btn-primary-sm:hover{
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px -6px rgba(31,166,214,.6);
+    }
+
+    .mypage-wrap{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 36px 24px 72px;
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .profile-card{
       position: relative;
+      border-radius: var(--radius-xl);
       overflow: hidden;
+      background:
+        radial-gradient(120% 90% at 0% 0%, rgba(184,166,255,.55), transparent 55%),
+        radial-gradient(100% 80% at 100% 100%, rgba(125,212,192,.55), transparent 55%),
+        linear-gradient(160deg, #0E6FA0 0%, #1FA6D6 50%, #2FB8C6 100%);
+      color: #fff;
+      padding: 34px;
+      box-shadow: var(--shadow-3);
     }
-    .profile-hero::before {
-      content: '';
+    .profile-card::before{
+      content:'';
       position: absolute;
-      width: 400px; height: 400px;
+      top: -70px; right: -55px;
+      width: 230px; height: 230px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-      top: -150px; right: -80px;
-      pointer-events: none;
+      background: radial-gradient(circle, rgba(255,212,71,.52), transparent 62%);
+      filter: blur(8px);
     }
-    .profile-hero::after {
-      content: '';
+    .profile-card::after{
+      content:'';
       position: absolute;
-      width: 280px; height: 280px;
+      bottom: -45px; left: -45px;
+      width: 180px; height: 180px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.04);
-      bottom: -100px; left: -40px;
-      pointer-events: none;
+      background: radial-gradient(circle, rgba(255,255,255,.23), transparent 60%);
     }
-    .hero-inner { position: relative; z-index: 1; }
-
-    .avatar-wrap {
+    .profile-inner{ position: relative; z-index: 1; }
+    .profile-eyebrow{
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.88);
+      padding: 6px 12px 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+    }
+    .profile-eyebrow::before{
+      content:''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-4);
+      box-shadow: 0 0 0 3px rgba(255,212,71,.3);
+    }
+    .avatar-wrap{
       width: 88px; height: 88px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.18);
-      border: 3px solid rgba(255,255,255,0.5);
+      margin: 20px 0 16px;
+      background: rgba(255,255,255,.18);
+      border: 3px solid rgba(255,255,255,.45);
       display: flex; align-items: center; justify-content: center;
-      font-size: 2.4rem;
-      margin: 0 auto 16px;
-      backdrop-filter: blur(6px);
+      font-size: 2.3rem;
+      backdrop-filter: blur(8px);
     }
-    .hero-nickname {
-      font-size: 1.5rem;
+    .hero-nickname{
+      font-size: clamp(30px, 3vw, 40px);
       font-weight: 800;
+      line-height: 1.04;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+    .hero-email{
+      font-size: 14px;
+      color: rgba(255,255,255,.82);
+      word-break: break-all;
+    }
+    .role-badge{
+      margin-top: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255,255,255,.17);
       color: #fff;
-      letter-spacing: -0.5px;
-      margin-bottom: 6px;
-    }
-    .hero-email {
-      font-size: 0.88rem;
-      color: rgba(255,255,255,0.72);
-      margin-bottom: 12px;
-    }
-    .role-badge {
-      display: inline-block;
-      background: rgba(255,255,255,0.18);
-      color: #fff;
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 4px 14px;
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.3);
-      letter-spacing: 0.2px;
-    }
-    .role-badge.admin {
-      background: rgba(251,191,36,0.25);
-      border-color: rgba(251,191,36,0.5);
-      color: #fef3c7;
-    }
-
-    /* ─────────────────────────────
-       메인 콘텐츠 (카드 올라오는 영역)
-    ───────────────────────────── */
-    .page-body {
-      max-width: 680px;
-      margin: -40px auto 0;
-      padding: 0 24px 60px;
-      position: relative;
-      z-index: 2;
-    }
-
-    /* ─────────────────────────────
-       정보 카드
-    ───────────────────────────── */
-    .info-card {
-      background: #fff;
-      border-radius: 20px;
-      border: 1px solid #e8edf5;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-      overflow: hidden;
-      margin-bottom: 16px;
-    }
-    .info-card-header {
-      padding: 18px 24px;
-      border-bottom: 1px solid #f3f4f6;
-      font-size: 0.82rem;
+      border: 1px solid rgba(255,255,255,.35);
+      padding: 6px 14px 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
       font-weight: 700;
-      color: #9ca3af;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
     }
-    .info-grid {
+    .role-badge::before{
+      content:'';
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(255,255,255,.25);
+    }
+    .role-badge.admin{
+      background: rgba(255,212,71,.24);
+      border-color: rgba(255,212,71,.46);
+      color: #fff7d3;
+    }
+    .role-badge.admin::before{
+      background: var(--accent-4);
+      box-shadow: 0 0 0 3px rgba(255,212,71,.28);
+    }
+
+    .profile-meta{
+      margin-top: 20px;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0;
+      gap: 10px;
     }
-    .info-item {
-      padding: 20px 24px;
+    .meta-item{
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.22);
+      backdrop-filter: blur(8px);
     }
-    .info-item:first-child {
-      border-right: 1px solid #f3f4f6;
-    }
-    .info-label {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: #9ca3af;
+    .meta-label{
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      letter-spacing: 0.4px;
-      margin-bottom: 6px;
+      color: rgba(255,255,255,.74);
+      margin-bottom: 5px;
     }
-    .info-value {
-      font-size: 0.97rem;
+    .meta-value{
+      font-size: 14px;
       font-weight: 600;
-      color: #111827;
+      color: #fff;
+      letter-spacing: -0.01em;
     }
-    .info-value.muted { color: #9ca3af; font-weight: 400; }
+    .meta-value.muted{
+      color: rgba(255,255,255,.68);
+      font-weight: 500;
+    }
 
-    /* ─────────────────────────────
-       액션 카드
-    ───────────────────────────── */
-    .action-card {
-      background: #fff;
-      border-radius: 20px;
-      border: 1px solid #e8edf5;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    .right-stack{
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .panel-card{
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-2);
       overflow: hidden;
     }
-    .action-item {
+    .panel-head{
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .panel-dot{
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--ok) 28%, transparent);
+    }
+
+    .action-item{
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 18px 24px;
-      cursor: pointer;
-      transition: background 0.15s;
-      border-bottom: 1px solid #f9fafb;
+      padding: 17px 22px;
+      border-bottom: 1px solid var(--line);
       text-decoration: none;
       color: inherit;
+      cursor: pointer;
+      transition: background .15s;
     }
-    .action-item:last-child { border-bottom: none; }
-    .action-item:hover { background: #f8faff; }
-    .action-item-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
+    .action-item:last-child{ border-bottom: none; }
+    .action-item:hover{ background: var(--surface-2); }
+    .action-item-left{
+      display: flex; align-items: center; gap: 12px;
     }
-    .action-icon {
-      width: 40px; height: 40px;
+    .action-icon{
+      width: 38px; height: 38px;
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem;
-      flex-shrink: 0;
+      font-size: 1.05rem;
+      flex: none;
     }
-    .action-icon.blue  { background: #eff6ff; }
-    .action-icon.red   { background: #fef2f2; }
-    .action-item-text  { font-size: 0.95rem; font-weight: 600; color: #111827; }
-    .action-item-sub   { font-size: 0.8rem; color: #9ca3af; margin-top: 1px; }
-    .action-arrow      { color: #d1d5db; font-size: 1.1rem; }
-    .action-item.danger .action-item-text { color: #ef4444; }
-    .action-item.danger .action-arrow     { color: #fca5a5; }
+    .action-icon.blue{
+      background: color-mix(in oklab, var(--accent) 12%, white);
+      color: var(--accent);
+    }
+    .action-icon.red{
+      background: color-mix(in oklab, var(--danger) 12%, white);
+      color: var(--danger);
+    }
+    .action-item-text{
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .action-item-sub{
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .action-arrow{
+      color: var(--muted-2);
+      font-size: 20px;
+      line-height: 1;
+    }
+    .action-item.danger .action-item-text{ color: var(--danger); }
+    .action-item.danger .action-arrow{ color: color-mix(in oklab, var(--danger) 60%, white); }
 
+    .toast-container{
+      position: fixed; left: 50%; bottom: 28px;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex; flex-direction: column; gap: 8px;
+      pointer-events: none;
+    }
+    .toast{
+      background: var(--ink); color: #fff;
+      padding: 11px 20px; border-radius: 999px;
+      font-size: 13px;
+      box-shadow: var(--shadow-3);
+      animation: toastIn .25s cubic-bezier(.2,.7,.2,1);
+    }
+    .toast.error{ background: var(--warn); }
+    .toast.success{ background: var(--ok); }
+    @keyframes toastIn{
+      from{ opacity: 0; transform: translateY(10px); }
+      to{ opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 980px){
+      .mypage-wrap{
+        grid-template-columns: 1fr;
+        padding: 22px 16px 52px;
+      }
+    }
+    @media (max-width: 480px){
+      .navbar{
+        width: calc(100% - 20px);
+        margin-top: 10px;
+        padding: 8px 10px 8px 16px;
+      }
+      .navbar-menu a{ display: none; }
+      .profile-card{ padding: 24px; }
+      .profile-meta{ grid-template-columns: 1fr; }
+      .hero-nickname{ font-size: 30px; }
+    }
   </style>
 </head>
 <body>
@@ -189,59 +405,57 @@
   </div>
 </nav>
 
-<!-- 프로필 히어로 -->
-<div class="profile-hero">
-  <div class="hero-inner">
-    <div class="avatar-wrap">🙋</div>
-    <div class="hero-nickname" id="nickname">불러오는 중...</div>
-    <div class="hero-email" id="email"></div>
-    <span class="role-badge" id="role"></span>
-  </div>
-</div>
+<main class="mypage-wrap">
+  <section class="profile-card">
+    <div class="profile-inner">
+      <span class="profile-eyebrow">My profile</span>
+      <div class="avatar-wrap">🙋</div>
+      <div class="hero-nickname" id="nickname">불러오는 중...</div>
+      <div class="hero-email" id="email"></div>
+      <span class="role-badge" id="role"></span>
 
-<!-- 본문 -->
-<div class="page-body">
-
-  <!-- 내 정보 -->
-  <div class="info-card">
-    <div class="info-card-header">내 정보</div>
-    <div class="info-grid">
-      <div class="info-item">
-        <div class="info-label">내 동네</div>
-        <div class="info-value" id="address">-</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">가입일</div>
-        <div class="info-value" id="createdAt">-</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 액션 목록 -->
-  <div class="action-card">
-    <div class="action-item" onclick="location.href='/view/meetings/write'">
-      <div class="action-item-left">
-        <div class="action-icon blue">➕</div>
-        <div>
-          <div class="action-item-text">모임 만들기</div>
-          <div class="action-item-sub">새로운 동네 모임을 시작해보세요</div>
+      <div class="profile-meta">
+        <div class="meta-item">
+          <div class="meta-label">내 동네</div>
+          <div class="meta-value" id="address">-</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">가입일</div>
+          <div class="meta-value" id="createdAt">-</div>
         </div>
       </div>
-      <div class="action-arrow">›</div>
     </div>
-    <div class="action-item danger" onclick="logout()">
-      <div class="action-item-left">
-        <div class="action-icon red">🚪</div>
-        <div>
-          <div class="action-item-text">로그아웃</div>
-          <div class="action-item-sub">계정에서 안전하게 로그아웃합니다</div>
-        </div>
-      </div>
-      <div class="action-arrow">›</div>
-    </div>
-  </div>
+  </section>
 
-</div>
+  <section class="right-stack">
+    <div class="panel-card">
+      <div class="panel-head">
+        <div class="panel-dot"></div>
+        빠른 작업
+      </div>
+      <div class="action-item" onclick="location.href='/view/meetings/write'">
+        <div class="action-item-left">
+          <div class="action-icon blue">➕</div>
+          <div>
+            <div class="action-item-text">모임 만들기</div>
+            <div class="action-item-sub">새로운 동네 모임을 시작해보세요</div>
+          </div>
+        </div>
+        <div class="action-arrow">›</div>
+      </div>
+      <div class="action-item danger" onclick="logout()">
+        <div class="action-item-left">
+          <div class="action-icon red">🚪</div>
+          <div>
+            <div class="action-item-text">로그아웃</div>
+            <div class="action-item-sub">계정에서 안전하게 로그아웃합니다</div>
+          </div>
+        </div>
+        <div class="action-arrow">›</div>
+      </div>
+    </div>
+  </section>
+</main>
 
 <div class="toast-container" id="toastContainer"></div>
 
