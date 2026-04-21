@@ -324,35 +324,6 @@ erDiagram
 
 ---
 
-## ⚙️ 실행 방법
-
-### 1. application.properties 환경 변수 설정
-```properties
-spring.datasource.username=root
-spring.datasource.password=본인_비밀번호
-
-jwt.secretKey=임의의_시크릿_키
-
-kakao.map.api-key=카카오_JavaScript_키
-
-spring.security.oauth2.client.registration.kakao.client-id=카카오_REST_API_키
-spring.security.oauth2.client.registration.kakao.client-secret=카카오_Client_Secret
-
-spring.security.oauth2.client.registration.google.client-id=구글_클라이언트_ID
-spring.security.oauth2.client.registration.google.client-secret=구글_클라이언트_시크릿
-```
-
-### 2. 빌드 및 실행
-```bash
-./gradlew bootRun
-```
-
-### 3. 접속
-```
-http://localhost:8080
-```
-
----
 
 ## 🔥 트러블슈팅
 
