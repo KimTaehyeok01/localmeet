@@ -5,163 +5,366 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>회원가입 - LocalMeet</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <style>
-    body {
-      background: #f8faff;
-      min-height: 100vh;
+    :root{
+      --bg: #F4FAFE;
+      --surface: #FFFFFF;
+      --surface-2: #EBF4FB;
+      --ink: #0B2036;
+      --ink-2: #264766;
+      --muted: #6B8AA8;
+      --muted-2: #A6BED4;
+      --line: #D7E6F2;
+      --line-strong: #B9CFE3;
+      --accent: #1FA6D6;
+      --accent-2: #7DD4C0;
+      --accent-3: #B8A6FF;
+      --accent-4: #FFD447;
+      --ok: #2CCB86;
+      --warn: #FF8A4C;
+      --radius: 16px;
+      --radius-lg: 22px;
+      --radius-xl: 32px;
+      --shadow-1: 0 1px 2px rgba(11,32,54,.05);
+      --shadow-2: 0 4px 16px -6px rgba(31,166,214,.18), 0 1px 3px rgba(11,32,54,.05);
+      --shadow-3: 0 20px 48px -16px rgba(31,166,214,.28), 0 2px 6px rgba(11,32,54,.06);
+      --font-kr: 'Pretendard', system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+      --font-serif: 'Instrument Serif', ui-serif, serif;
+      --font-en: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    *{ box-sizing: border-box; }
+    html, body{ height: 100%; }
+    body{
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-kr);
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
-    /* ─────────────────────────────
-       전체 레이아웃
-    ───────────────────────────── */
-    .signup-wrap {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 24px;
+    body::before{
+      content:''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(55vw 50vh at 90% -10%, rgba(125,212,192,.45), transparent 60%),
+        radial-gradient(50vw 55vh at -8% 20%, rgba(184,166,255,.38), transparent 60%),
+        radial-gradient(45vw 50vh at 50% 110%, rgba(31,166,214,.22), transparent 60%);
     }
-    .signup-box {
+    body::after{
+      content:''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .3;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.06 0 0 0 0 0.13 0 0 0 0 0.21 0 0 0 0.04 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    }
+    body > *{ position: relative; z-index: 1; }
+
+    .navbar{
+      flex: none; position: relative;
+      max-width: 1240px;
+      margin: 14px auto 0;
+      width: calc(100% - 28px);
+      background: color-mix(in oklab, var(--surface) 82%, transparent);
+      backdrop-filter: saturate(1.3) blur(18px);
+      -webkit-backdrop-filter: saturate(1.3) blur(18px);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px 10px 22px;
+      box-shadow: var(--shadow-1);
+    }
+    .navbar-brand{
+      font-weight: 700; font-size: 18px; color: var(--ink); text-decoration: none;
+      letter-spacing: -0.02em;
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .navbar-brand::before{
+      content:''; width: 26px; height: 26px; border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255,255,255,.85), transparent 50%),
+        conic-gradient(from 200deg, var(--accent), var(--accent-2) 45%, var(--accent-3) 72%, var(--accent-4) 100%);
+      box-shadow: 0 2px 8px -2px rgba(31,166,214,.4);
+    }
+    .navbar-brand span{
+      background: linear-gradient(90deg, var(--accent), var(--accent-3));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .nav-right{ font-size: 13px; color: var(--muted); }
+    .nav-right a{ color: var(--accent); font-weight: 600; text-decoration: none; margin-left: 6px; }
+    .nav-right a:hover{ text-decoration: underline; }
+
+    /* MAIN */
+    .signup-wrap{
+      flex: 1; min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 1240px;
       width: 100%;
-      max-width: 440px;
+      margin: 0 auto;
+      padding: 14px 24px 20px;
+      align-items: stretch;
     }
 
-    /* ─────────────────────────────
-       헤더
-    ───────────────────────────── */
-    .signup-header {
-      text-align: center;
-      margin-bottom: 28px;
+    /* LEFT */
+    .brand-panel{
+      position: relative;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      background:
+        radial-gradient(120% 90% at 0% 0%, rgba(255,212,71,.45), transparent 55%),
+        radial-gradient(100% 80% at 100% 100%, rgba(184,166,255,.55), transparent 55%),
+        linear-gradient(160deg, #2FB8C6 0%, #1FA6D6 50%, #0E6FA0 100%);
+      color: #fff;
+      padding: 36px 36px 32px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      min-height: 0;
+      box-shadow: var(--shadow-3);
     }
-    .signup-logo {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 56px; height: 56px;
-      background: linear-gradient(135deg, #2563eb, #3b82f6);
-      border-radius: 16px; font-size: 1.6rem;
-      margin-bottom: 16px;
-      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+    .brand-panel::before{
+      content:''; position: absolute; top: -60px; right: -60px;
+      width: 240px; height: 240px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(125,212,192,.6), transparent 60%);
+      filter: blur(6px);
     }
-    .signup-title {
-      font-size: 1.6rem; font-weight: 800;
-      color: #111827; letter-spacing: -0.5px; margin-bottom: 6px;
+    .brand-inner{ position: relative; z-index: 1; }
+    .brand-eyebrow{
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(255,255,255,.85);
+      padding: 6px 12px 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
     }
-    .signup-sub { font-size: 0.9rem; color: #9ca3af; }
+    .brand-eyebrow::before{
+      content:''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-4);
+      box-shadow: 0 0 0 3px rgba(255,212,71,.3);
+    }
+    .brand-title{
+      font-weight: 800;
+      font-size: clamp(28px, 3vw, 40px);
+      line-height: 1.02;
+      letter-spacing: -0.035em;
+      margin: 20px 0 14px;
+      text-wrap: balance;
+    }
+    .brand-title em{
+      font-family: var(--font-serif);
+      font-style: italic; font-weight: 400;
+      color: var(--accent-4); font-size: 1.02em;
+    }
+    .brand-sub{
+      font-size: 14.5px; line-height: 1.55;
+      color: rgba(255,255,255,.82); max-width: 38ch; margin: 0;
+    }
 
-    /* ─────────────────────────────
-       카드
-    ───────────────────────────── */
-    .signup-card {
-      background: #fff;
-      border-radius: 24px;
-      border: 1px solid #e8edf5;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.08);
-      padding: 32px;
+    /* 체크리스트 */
+    .brand-checks{
+      position: relative; z-index: 1;
+      margin-top: 20px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .brand-check{
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      backdrop-filter: blur(8px);
+      font-size: 13.5px;
+    }
+    .brand-check svg{ flex: none; color: var(--accent-4); }
+
+    /* RIGHT */
+    .signup-box{
+      display: flex; flex-direction: column;
+      min-height: 0; justify-content: center;
+    }
+    .signup-header{ margin-bottom: 14px; }
+    .signup-eyebrow{
+      font-family: var(--font-mono);
+      font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted); font-weight: 500;
+    }
+    .signup-title{
+      font-size: clamp(26px, 2.6vw, 32px);
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.035em;
+      line-height: 1.05;
+      margin: 8px 0 4px;
+    }
+    .signup-title em{
+      font-family: var(--font-serif);
+      font-style: italic; font-weight: 400; color: var(--accent);
+    }
+    .signup-sub{
+      font-size: 14px; color: var(--muted); margin: 0;
     }
 
-    /* ─────────────────────────────
-       섹션 구분
-    ───────────────────────────── */
-    .form-section-label {
-      font-size: 0.72rem; font-weight: 700;
-      color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px;
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 16px; margin-top: 8px;
-    }
-    .form-section-label:first-child { margin-top: 0; }
-    .form-section-label::after {
-      content: ''; flex: 1; height: 1px; background: #f3f4f6;
+    .signup-card{
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-2);
+      padding: 20px 22px;
     }
 
-    /* ─────────────────────────────
-       폼 요소
-    ───────────────────────────── */
-    .field { margin-bottom: 14px; }
-    .field-label {
-      display: block; font-size: 0.83rem; font-weight: 700;
-      color: #374151; margin-bottom: 7px;
+    .form-section-label{
+      font-family: var(--font-mono);
+      font-size: 10.5px; font-weight: 500;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.14em;
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 10px; margin-top: 10px;
     }
-    .field-label .required { color: #2563eb; margin-left: 2px; }
-    .field-label .optional { font-size: 0.75rem; font-weight: 400; color: #9ca3af; margin-left: 6px; }
+    .form-section-label:first-child{ margin-top: 0; }
+    .form-section-label::after{
+      content:''; flex: 1; height: 1px; background: var(--line);
+    }
 
-    .field-input {
-      width: 100%; padding: 12px 16px;
-      border: 1.5px solid #e5e7eb; border-radius: 12px;
-      font-size: 0.95rem; font-family: 'Noto Sans KR', sans-serif;
-      color: #111827; background: #fff; outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+    .field{ margin-bottom: 10px; }
+    .field-label{
+      display: block;
+      font-size: 12.5px; font-weight: 600;
+      color: var(--ink-2);
+      margin-bottom: 6px;
     }
-    .field-input:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    .field-label .required{ color: var(--accent); margin-left: 2px; }
+    .field-label .optional{
+      font-size: 11px; font-weight: 500; color: var(--muted);
+      margin-left: 6px;
+      font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase;
     }
-    .field-input::placeholder { color: #d1d5db; }
-    .field-input[readonly] { background: #f9fafb; cursor: pointer; }
+    .field-input{
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: var(--font-kr);
+      color: var(--ink);
+      background: var(--surface);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field-input:focus{
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 14%, transparent);
+    }
+    .field-input::placeholder{ color: var(--muted-2); }
+    .field-input[readonly]{ background: var(--surface-2); cursor: pointer; }
 
-    /* 인풋 + 버튼 그룹 */
-    .input-row { display: flex; gap: 8px; }
-    .input-row .field-input { flex: 1; }
-    .check-btn {
-      background: #eff6ff; color: #2563eb;
-      border: 1.5px solid #bfdbfe; border-radius: 12px;
-      padding: 12px 14px; font-size: 0.82rem; font-weight: 700;
-      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+    .input-row{ display: flex; gap: 8px; }
+    .input-row .field-input{ flex: 1; }
+    .check-btn{
+      background: var(--surface-2);
+      color: var(--accent);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 12.5px; font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font-kr);
       white-space: nowrap;
-      transition: background 0.15s, border-color 0.15s;
+      transition: background .15s, border-color .15s;
     }
-    .check-btn:hover { background: #dbeafe; border-color: #93c5fd; }
-
-    .addr-btn {
-      background: #f3f4f6; color: #6b7280;
-      border: 1.5px solid #e5e7eb; border-radius: 12px;
-      padding: 12px 14px; font-size: 0.82rem; font-weight: 700;
-      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+    .check-btn:hover{
+      background: color-mix(in oklab, var(--accent) 12%, white);
+      border-color: var(--accent);
+    }
+    .addr-btn{
+      background: var(--surface-2);
+      color: var(--ink-2);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 12.5px; font-weight: 700;
+      cursor: pointer; font-family: var(--font-kr);
       white-space: nowrap;
-      transition: background 0.15s;
+      transition: background .15s;
+      display: inline-flex; align-items: center; gap: 6px;
     }
-    .addr-btn:hover { background: #e5e7eb; }
+    .addr-btn:hover{ background: var(--line); }
 
-    /* 힌트 텍스트 */
-    .field-hint {
-      font-size: 0.78rem; color: #9ca3af;
+    .field-hint{
+      font-size: 12px; color: var(--muted);
       margin-top: 5px; padding-left: 2px;
     }
 
-    /* ─────────────────────────────
-       가입 버튼
-    ───────────────────────────── */
-    .btn-signup {
-      width: 100%; padding: 14px;
-      background: #2563eb; color: #fff;
-      border: none; border-radius: 12px;
-      font-size: 0.97rem; font-weight: 700;
-      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
-      margin-top: 20px;
-      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
-      letter-spacing: -0.2px;
+    .btn-signup{
+      width: 100%;
+      padding: 13px 20px;
+      background: linear-gradient(135deg, var(--accent), #0E8AB8);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      font-size: 14.5px; font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font-kr);
+      margin-top: 14px;
+      letter-spacing: -0.005em;
+      box-shadow: 0 6px 18px -6px rgba(31,166,214,.55);
+      transition: transform .15s, filter .15s, box-shadow .15s;
     }
-    .btn-signup:hover {
-      background: #1d4ed8; transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+    .btn-signup:hover{
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px -8px rgba(31,166,214,.65);
     }
 
-    /* ─────────────────────────────
-       하단 링크
-    ───────────────────────────── */
-    .signup-footer {
+    .signup-footer{
       text-align: center;
-      margin-top: 24px;
-      font-size: 0.88rem; color: #9ca3af;
+      margin-top: 12px;
+      font-size: 13px; color: var(--muted);
     }
-    .signup-footer a {
-      color: #2563eb; font-weight: 700;
+    .signup-footer a{
+      color: var(--accent); font-weight: 700;
       text-decoration: none; margin-left: 4px;
     }
-    .signup-footer a:hover { text-decoration: underline; }
+    .signup-footer a:hover{ text-decoration: underline; }
 
-    @media (max-width: 480px) {
-      .signup-card { padding: 24px 20px; border-radius: 20px; }
+    .toast-container{
+      position: fixed; left: 50%; bottom: 28px;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex; flex-direction: column; gap: 8px;
+      pointer-events: none;
+    }
+    .toast{
+      background: var(--ink); color: #fff;
+      padding: 11px 20px; border-radius: 999px;
+      font-size: 13px; box-shadow: var(--shadow-3);
+      animation: toastIn .25s cubic-bezier(.2,.7,.2,1);
+    }
+    .toast.error{ background: var(--warn); }
+    .toast.success{ background: var(--ok); }
+    @keyframes toastIn{
+      from{ opacity: 0; transform: translateY(10px); }
+      to{ opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px){
+      body{ overflow: auto; }
+      .signup-wrap{ grid-template-columns: 1fr; padding: 14px 16px 40px; }
+      .brand-panel{ display: none; }
+    }
+    @media (max-width: 480px){
+      .navbar{ width: calc(100% - 20px); margin-top: 10px; padding: 8px 10px 8px 16px; }
+      .signup-card{ padding: 18px; }
+    }
+    @media (max-height: 760px) and (min-width: 901px){
+      .signup-card{ padding: 16px 18px; }
+      .field{ margin-bottom: 8px; }
+      .brand-title{ font-size: 28px; margin: 14px 0 10px; }
+      .brand-checks{ margin-top: 14px; gap: 8px; }
     }
   </style>
 </head>
@@ -169,22 +372,43 @@
 
 <nav class="navbar">
   <a class="navbar-brand" href="/view/meetings">Local<span>Meet</span></a>
+  <div class="nav-right">이미 가입하셨나요? <a href="/view/login">로그인</a></div>
 </nav>
 
 <div class="signup-wrap">
-  <div class="signup-box">
 
-    <!-- 헤더 -->
+  <!-- LEFT -->
+  <aside class="brand-panel">
+    <div class="brand-inner">
+      <span class="brand-eyebrow">Join the neighborhood</span>
+      <h2 class="brand-title">함께 시작해요,<br><em>이웃으로</em></h2>
+      <p class="brand-sub">LocalMeet에 가입하고 동네 기반 모임에 참여하세요. 걸어서 갈 수 있는 거리에 새로운 친구가 기다립니다.</p>
+    </div>
+    <div class="brand-checks">
+      <div class="brand-check">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        내 동네 기반 모임 추천
+      </div>
+      <div class="brand-check">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        관심사별 모임 탐색
+      </div>
+      <div class="brand-check">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        언제든 내가 주최자가 될 수 있어요
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT -->
+  <div class="signup-box">
     <div class="signup-header">
-      <div class="signup-logo">🗺️</div>
-      <div class="signup-title">함께 시작해요!</div>
-      <div class="signup-sub">LocalMeet에 가입하고 동네 모임을 찾아보세요</div>
+      <div class="signup-eyebrow">Create your account</div>
+      <h1 class="signup-title">반가워요, <em>이웃님</em></h1>
+      <p class="signup-sub">몇 가지 정보만 입력하면 바로 시작할 수 있어요</p>
     </div>
 
-    <!-- 카드 -->
     <div class="signup-card">
-
-      <!-- 계정 정보 -->
       <div class="form-section-label">계정 정보</div>
 
       <div class="field">
@@ -200,8 +424,7 @@
         <input type="password" id="userPassword" class="field-input" placeholder="4자 이상 입력하세요">
       </div>
 
-      <!-- 프로필 정보 -->
-      <div class="form-section-label" style="margin-top:20px;">프로필</div>
+      <div class="form-section-label">프로필</div>
 
       <div class="field">
         <label class="field-label">닉네임 <span class="required">*</span></label>
@@ -212,28 +435,28 @@
       </div>
 
       <div class="field">
-        <label class="field-label">내 동네 <span class="optional">선택사항</span></label>
+        <label class="field-label">내 동네 <span class="optional">Optional</span></label>
         <div class="input-row">
           <input type="text" id="userAddress" class="field-input" placeholder="주소를 검색해보세요" readonly>
-          <button class="addr-btn" onclick="searchAddress()">📍 검색</button>
+          <button class="addr-btn" onclick="searchAddress()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            검색
+          </button>
         </div>
         <input type="hidden" id="userLat">
         <input type="hidden" id="userLng">
         <div class="field-hint">내 동네를 설정하면 주변 모임을 더 잘 찾을 수 있어요</div>
       </div>
 
-      <!-- 가입 버튼 -->
       <button class="btn-signup" onclick="signup()">가입하기</button>
-
     </div>
 
-    <!-- 로그인 링크 -->
     <div class="signup-footer">
       이미 계정이 있으신가요?
       <a href="/view/login">로그인</a>
     </div>
-
   </div>
+
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
