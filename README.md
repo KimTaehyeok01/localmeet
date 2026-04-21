@@ -141,7 +141,8 @@ OPEN(모집중) ──→ FULL(모집완료, 승인 인원 도달 시 자동 전
 
 > 카카오맵에 모임 위치를 마커로 표시하고, 동네 키워드로 검색할 수 있다.
 
-![모임 목록](readme_assets/meeting-list.png)
+![모임 목록](readme_assets/meeting-list1.png)
+![모임 목록](readme_assets/meeting-list2.png)
 
 ---
 
@@ -165,7 +166,8 @@ OPEN(모집중) ──→ FULL(모집완료, 승인 인원 도달 시 자동 전
 
 > 모임 상세 정보와 카카오맵 위치를 함께 확인하고, 참가 신청 및 실시간 채팅을 이용할 수 있다.
 
-![모임 상세](readme_assets/meeting-detail.png)
+![모임 상세](readme_assets/meeting-detail1.png)
+![모임 상세](readme_assets/meeting-detail2.png)
 
 ---
 
