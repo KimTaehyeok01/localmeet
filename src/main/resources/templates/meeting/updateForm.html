@@ -5,186 +5,351 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>모임 수정 - LocalMeet</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
   <style>
-    body { background: #f8faff; }
+    :root{
+      --bg: #F4FAFE;
+      --surface: #FFFFFF;
+      --surface-2: #EBF4FB;
+      --ink: #0B2036;
+      --ink-2: #264766;
+      --muted: #6B8AA8;
+      --muted-2: #A6BED4;
+      --line: #D7E6F2;
+      --accent: #1FA6D6;
+      --accent-2: #7DD4C0;
+      --accent-3: #B8A6FF;
+      --accent-4: #FFD447;
+      --ok: #2CCB86;
+      --warn: #FF8A4C;
+      --radius: 16px;
+      --radius-lg: 22px;
+      --radius-xl: 32px;
+      --shadow-1: 0 1px 2px rgba(11,32,54,.05);
+      --shadow-2: 0 4px 16px -6px rgba(31,166,214,.18), 0 1px 3px rgba(11,32,54,.05);
+      --shadow-3: 0 20px 48px -16px rgba(31,166,214,.28), 0 2px 6px rgba(11,32,54,.06);
+      --font-kr: 'Pretendard', system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+      --font-serif: 'Instrument Serif', ui-serif, serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    *{ box-sizing: border-box; }
+    body{
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-kr);
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
+    }
+    body::before{
+      content:'';
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(55vw 50vh at 90% -10%, rgba(125,212,192,.42), transparent 60%),
+        radial-gradient(50vw 55vh at -8% 20%, rgba(184,166,255,.36), transparent 60%),
+        radial-gradient(45vw 50vh at 50% 110%, rgba(31,166,214,.2), transparent 60%);
+    }
+    body > *{ position: relative; z-index: 1; }
 
-    /* ─────────────────────────────
-       히어로
-    ───────────────────────────── */
-    .page-hero {
-      background: linear-gradient(135deg, #1e40af 0%, #2563eb 60%, #3b82f6 100%);
-      padding: 40px 24px 72px;
-      text-align: center;
-      position: relative; overflow: hidden;
+    .navbar{
+      position: sticky; top: 14px; z-index: 30;
+      max-width: 1240px;
+      margin: 14px auto 0;
+      width: calc(100% - 28px);
+      background: color-mix(in oklab, var(--surface) 82%, transparent);
+      backdrop-filter: saturate(1.3) blur(18px);
+      -webkit-backdrop-filter: saturate(1.3) blur(18px);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px 10px 22px;
+      box-shadow: var(--shadow-1);
     }
-    .page-hero::before {
-      content: '';
-      position: absolute;
-      width: 360px; height: 360px; border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-      top: -140px; right: -60px; pointer-events: none;
+    .navbar-brand{
+      font-weight: 700; font-size: 18px;
+      color: var(--ink); text-decoration: none;
+      letter-spacing: -0.02em;
+      display: inline-flex; align-items: center; gap: 10px;
     }
-    .page-hero::after {
-      content: '';
-      position: absolute;
-      width: 240px; height: 240px; border-radius: 50%;
-      background: rgba(255,255,255,0.04);
-      bottom: -80px; left: -20px; pointer-events: none;
+    .navbar-brand::before{
+      content:''; width: 26px; height: 26px; border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255,255,255,.85), transparent 50%),
+        conic-gradient(from 200deg, var(--accent), var(--accent-2) 45%, var(--accent-3) 72%, var(--accent-4) 100%);
+      box-shadow: 0 2px 8px -2px rgba(31,166,214,.4);
     }
-    .hero-inner { position: relative; z-index: 1; }
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,0.15);
-      color: rgba(255,255,255,0.9);
-      font-size: 0.8rem; font-weight: 600;
-      padding: 5px 14px; border-radius: 20px;
-      margin-bottom: 14px;
-      border: 1px solid rgba(255,255,255,0.2);
+    .navbar-brand span{
+      background: linear-gradient(90deg, var(--accent), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
-    .hero-title {
-      font-size: 1.8rem; font-weight: 800;
-      color: #fff; letter-spacing: -0.5px; margin-bottom: 6px;
+    .navbar-menu a{
+      padding: 8px 14px;
+      font-size: 14px;
+      color: var(--ink-2);
+      text-decoration: none;
+      border-radius: 999px;
+      transition: background .15s, color .15s;
+      font-weight: 500;
     }
-    .hero-sub { font-size: 0.9rem; color: rgba(255,255,255,0.72); }
+    .navbar-menu a:hover{ color: var(--accent); background: var(--surface-2); }
 
-    /* ─────────────────────────────
-       폼 영역
-    ───────────────────────────── */
-    .page-body {
-      max-width: 680px;
-      margin: -36px auto 0;
-      padding: 0 24px 60px;
-      position: relative; z-index: 2;
+    .page-hero{
+      max-width: 1180px;
+      margin: 18px auto 0;
+      padding: 30px 24px;
+      border-radius: var(--radius-xl);
+      background:
+        radial-gradient(120% 90% at 0% 0%, rgba(255,212,71,.45), transparent 55%),
+        radial-gradient(100% 80% at 100% 100%, rgba(184,166,255,.55), transparent 55%),
+        linear-gradient(160deg, #2FB8C6 0%, #1FA6D6 50%, #0E6FA0 100%);
+      color: #fff;
+      box-shadow: var(--shadow-3);
     }
-    .form-card {
+    .hero-eyebrow{
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.88);
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.24);
+      padding: 6px 12px 6px 10px;
+      border-radius: 999px;
+      width: fit-content;
+    }
+    .hero-eyebrow::before{
+      content:''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-4);
+      box-shadow: 0 0 0 3px rgba(255,212,71,.3);
+    }
+    .hero-title{
+      margin: 16px 0 8px;
+      font-size: clamp(34px, 3.8vw, 46px);
+      letter-spacing: -0.03em;
+      line-height: 1.03;
+      font-weight: 800;
+    }
+    .hero-title em{
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--accent-4);
+    }
+    .hero-sub{ margin: 0; color: rgba(255,255,255,.84); }
+
+    .page-body{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 18px 24px 62px;
+    }
+    .form-card{
+      max-width: 760px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-2);
+      overflow: hidden;
+    }
+    .form-section{ padding: 24px 24px 0; }
+    .form-section:last-of-type{ padding-bottom: 24px; }
+    .form-section-title{
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .form-section-title::after{
+      content:''; flex: 1; height: 1px; background: var(--line);
+    }
+    .field{ margin-bottom: 16px; }
+    .field-label{
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink-2);
+      margin-bottom: 7px;
+    }
+    .field-label .required{ color: var(--accent); margin-left: 2px; }
+    .field-label .optional{ color: var(--muted); margin-left: 6px; font-size: 11px; font-weight: 500; }
+    .field-input{
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: var(--font-kr);
+      color: var(--ink);
       background: #fff;
-      border-radius: 20px;
-      border: 1px solid #e8edf5;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-      overflow: hidden;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
     }
-    .form-section { padding: 28px 28px 0; }
-    .form-section:last-of-type { padding-bottom: 28px; }
-    .form-section-title {
-      font-size: 0.75rem; font-weight: 700;
-      color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px;
-      margin-bottom: 16px;
-      display: flex; align-items: center; gap: 8px;
+    .field-input:focus{
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 14%, transparent);
     }
-    .form-section-title::after {
-      content: ''; flex: 1; height: 1px; background: #f3f4f6;
-    }
+    .field-input[readonly]{ background: var(--surface-2); cursor: pointer; }
+    textarea.field-input{ resize: vertical; min-height: 130px; line-height: 1.7; }
 
-    /* ─────────────────────────────
-       폼 요소
-    ───────────────────────────── */
-    .field { margin-bottom: 20px; }
-    .field-label {
-      display: block; font-size: 0.85rem; font-weight: 700;
-      color: #374151; margin-bottom: 8px;
+    .addr-row{ display: flex; gap: 10px; }
+    .addr-row .field-input{ flex: 1; }
+    .addr-btn{
+      background: var(--surface-2);
+      color: var(--ink-2);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font-kr);
+      white-space: nowrap;
+      transition: background .15s;
     }
-    .field-label .required { color: #2563eb; margin-left: 2px; }
-    .field-label .optional { font-size: 0.75rem; font-weight: 400; color: #9ca3af; margin-left: 6px; }
+    .addr-btn:hover{ background: var(--line); }
 
-    .field-input {
-      width: 100%; padding: 12px 16px;
-      border: 1.5px solid #e5e7eb; border-radius: 12px;
-      font-size: 0.95rem; font-family: 'Noto Sans KR', sans-serif;
-      color: #111827; background: #fff; outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .field-input:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-    }
-    .field-input[readonly] { background: #f9fafb; cursor: pointer; }
-    textarea.field-input { resize: vertical; min-height: 130px; line-height: 1.7; }
-
-    .addr-row { display: flex; gap: 10px; }
-    .addr-row .field-input { flex: 1; }
-    .addr-btn {
-      background: #eff6ff; color: #2563eb;
-      border: 1.5px solid #bfdbfe; border-radius: 12px;
-      padding: 12px 18px; font-size: 0.87rem; font-weight: 700;
-      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
-      white-space: nowrap; transition: background 0.15s;
-    }
-    .addr-btn:hover { background: #dbeafe; }
-
-    .number-input-wrap {
+    .number-input-wrap{
       display: flex; align-items: center;
-      border: 1.5px solid #e5e7eb; border-radius: 12px;
-      overflow: hidden; width: fit-content;
-      transition: border-color 0.2s;
-    }
-    .number-input-wrap:focus-within { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-    .num-btn {
-      background: #f9fafb; border: none;
-      padding: 12px 18px; font-size: 1.1rem;
-      cursor: pointer; color: #6b7280; line-height: 1;
-      font-family: 'Noto Sans KR', sans-serif;
-      transition: background 0.15s, color 0.15s;
-    }
-    .num-btn:hover { background: #eff6ff; color: #2563eb; }
-    .num-display {
-      min-width: 64px; text-align: center;
-      font-size: 1.05rem; font-weight: 700; color: #111827;
-      border: none;
-      border-left: 1px solid #f3f4f6;
-      border-right: 1px solid #f3f4f6;
-      padding: 12px 8px;
-      font-family: 'Noto Sans KR', sans-serif; outline: none; background: #fff;
-    }
-
-    /* ─────────────────────────────
-       지도 미리보기
-    ───────────────────────────── */
-    .map-preview {
-      border-top: 1px solid #f3f4f6;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
       overflow: hidden;
+      width: fit-content;
+      transition: border-color .2s, box-shadow .2s;
+      background: #fff;
     }
-    .map-preview-label {
-      padding: 10px 28px;
-      font-size: 0.78rem; font-weight: 600;
-      color: #9ca3af; text-transform: uppercase; letter-spacing: 0.4px;
-      background: #fafafa;
+    .number-input-wrap:focus-within{
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 14%, transparent);
+    }
+    .num-btn{
+      background: var(--surface-2);
+      border: none;
+      padding: 12px 16px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      color: var(--ink-2);
+      transition: background .15s, color .15s;
+      font-family: var(--font-kr);
+      line-height: 1;
+    }
+    .num-btn:hover{ background: color-mix(in oklab, var(--accent) 12%, white); color: var(--accent); }
+    .num-display{
+      min-width: 64px;
+      text-align: center;
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: var(--ink);
+      border: none;
+      border-left: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 12px 8px;
+      font-family: var(--font-kr);
+      outline: none;
+      background: #fff;
     }
 
-    /* ─────────────────────────────
-       하단 버튼
-    ───────────────────────────── */
-    .form-actions {
-      display: flex; gap: 12px;
-      padding: 20px 28px 28px;
-      border-top: 1px solid #f3f4f6;
+    .map-preview{
+      border-top: 1px solid var(--line);
+      overflow: hidden;
+      background: var(--surface-2);
     }
-    .btn-submit {
-      flex: 1; background: #2563eb; color: #fff;
-      border: none; border-radius: 12px;
-      padding: 14px 24px;
-      font-size: 0.97rem; font-weight: 700;
-      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
-      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+    .map-preview-label{
+      padding: 10px 24px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+      background: #fff;
     }
-    .btn-submit:hover {
-      background: #1d4ed8; transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(37,99,235,0.3);
-    }
-    .btn-cancel {
-      background: #f3f4f6; color: #6b7280;
-      border: none; border-radius: 12px;
-      padding: 14px 22px; font-size: 0.92rem; font-weight: 600;
-      cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
-      transition: background 0.15s;
-    }
-    .btn-cancel:hover { background: #e5e7eb; color: #374151; }
 
-    @media (max-width: 640px) {
-      .page-hero { padding: 32px 16px 60px; }
-      .hero-title { font-size: 1.5rem; }
-      .page-body { padding: 0 16px 48px; }
-      .form-section { padding: 20px 20px 0; }
-      .form-actions { padding: 16px 20px 20px; }
+    .form-actions{
+      display: flex;
+      gap: 10px;
+      padding: 18px 24px 24px;
+      border-top: 1px solid var(--line);
+      background: #fff;
+    }
+    .btn-submit{
+      flex: 1;
+      background: linear-gradient(135deg, var(--accent), #0E8AB8);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 13px 22px;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font-kr);
+      transition: transform .15s, filter .15s, box-shadow .15s;
+      box-shadow: 0 6px 18px -6px rgba(31,166,214,.55);
+    }
+    .btn-submit:hover{
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px -8px rgba(31,166,214,.65);
+    }
+    .btn-cancel{
+      background: var(--surface-2);
+      color: var(--ink-2);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 13px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font-kr);
+    }
+    .btn-cancel:hover{ background: var(--line); }
+
+    .toast-container{
+      position: fixed; left: 50%; bottom: 28px;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex; flex-direction: column; gap: 8px;
+      pointer-events: none;
+    }
+    .toast{
+      background: var(--ink); color: #fff;
+      padding: 11px 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      box-shadow: var(--shadow-3);
+      animation: toastIn .25s cubic-bezier(.2,.7,.2,1);
+    }
+    .toast.error{ background: var(--warn); }
+    .toast.success{ background: var(--ok); }
+    @keyframes toastIn{
+      from{ opacity: 0; transform: translateY(10px); }
+      to{ opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 760px){
+      .page-hero{ margin: 14px 16px 0; padding: 24px 20px; }
+      .page-body{ padding: 14px 16px 46px; }
+      .form-section{ padding: 20px 20px 0; }
+      .form-actions{ padding: 16px 20px 20px; }
+    }
+    @media (max-width: 480px){
+      .navbar{
+        width: calc(100% - 20px);
+        margin-top: 10px;
+        padding: 8px 10px 8px 16px;
+      }
+      .addr-row{ flex-direction: column; }
+      .form-actions{ flex-direction: column; }
     }
   </style>
 </head>
@@ -198,20 +363,15 @@
   </div>
 </nav>
 
-<!-- 히어로 -->
 <div class="page-hero">
-  <div class="hero-inner">
-    <div class="hero-eyebrow">✏️ 수정</div>
-    <div class="hero-title">모임 수정하기</div>
-    <div class="hero-sub">모임 정보를 업데이트하세요</div>
-  </div>
+  <div class="hero-eyebrow">Update meeting</div>
+  <div class="hero-title">모임 정보 <em>수정</em></div>
+  <p class="hero-sub">필요한 정보를 업데이트하고 저장하세요</p>
 </div>
 
-<!-- 폼 본문 -->
 <div class="page-body">
   <div class="form-card">
 
-    <!-- 기본 정보 -->
     <div class="form-section">
       <div class="form-section-title">기본 정보</div>
 
@@ -226,7 +386,6 @@
       </div>
     </div>
 
-    <!-- 위치 -->
     <div class="form-section">
       <div class="form-section-title">위치</div>
 
@@ -241,14 +400,12 @@
       </div>
     </div>
 
-    <!-- 지도 미리보기 -->
     <div class="map-preview">
-      <div class="map-preview-label">📍 위치 미리보기</div>
+      <div class="map-preview-label">위치 미리보기</div>
       <div id="map" style="width:100%; height:220px;"></div>
     </div>
 
-    <!-- 인원 -->
-    <div class="form-section" style="padding-bottom:28px;">
+    <div class="form-section" style="padding-bottom:24px;">
       <div class="form-section-title">인원</div>
 
       <div class="field" style="margin-bottom:0;">
@@ -261,7 +418,6 @@
       </div>
     </div>
 
-    <!-- 액션 버튼 -->
     <div class="form-actions">
       <button class="btn-submit" onclick="updateMeeting()">수정 완료</button>
       <button class="btn-cancel" th:onclick="|location.href='/view/meetings/${dto.meetingIdx}'|">취소</button>

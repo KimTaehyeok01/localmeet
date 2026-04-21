@@ -2,35 +2,237 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>로그인 중... - LocalMeet</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+    <style>
+        :root{
+            --bg: #F4FAFE;
+            --surface: #FFFFFF;
+            --surface-2: #EBF4FB;
+            --ink: #0B2036;
+            --ink-2: #264766;
+            --muted: #6B8AA8;
+            --muted-2: #A6BED4;
+            --line: #D7E6F2;
+            --accent: #1FA6D6;
+            --accent-2: #7DD4C0;
+            --accent-3: #B8A6FF;
+            --accent-4: #FFD447;
+            --warn: #FF8A4C;
+            --ok: #2CCB86;
+            --radius: 16px;
+            --radius-lg: 22px;
+            --radius-xl: 32px;
+            --shadow-2: 0 4px 16px -6px rgba(31,166,214,.18), 0 1px 3px rgba(11,32,54,.05);
+            --shadow-3: 0 20px 48px -16px rgba(31,166,214,.28), 0 2px 6px rgba(11,32,54,.06);
+            --font-kr: 'Pretendard', system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+            --font-serif: 'Instrument Serif', ui-serif, serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+        }
+        *{ box-sizing: border-box; }
+        html, body{ height: 100%; }
+        body{
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--font-kr);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+        }
+        body::before{
+            content:'';
+            position: fixed; inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                radial-gradient(55vw 50vh at 90% -10%, rgba(125,212,192,.42), transparent 60%),
+                radial-gradient(50vw 55vh at -8% 20%, rgba(184,166,255,.35), transparent 60%),
+                radial-gradient(45vw 50vh at 50% 110%, rgba(31,166,214,.2), transparent 60%);
+        }
+        body > *{ position: relative; z-index: 1; }
+
+        .screen{
+            width: min(540px, calc(100% - 28px));
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-3);
+            padding: 30px 28px 28px;
+        }
+        .screen-eyebrow{
+            display: inline-flex; align-items: center; gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 14px;
+        }
+        .screen-eyebrow::before{
+            content:'';
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--accent-4);
+            box-shadow: 0 0 0 3px rgba(255,212,71,.28);
+        }
+        .screen-title{
+            font-size: clamp(28px, 3.8vw, 36px);
+            line-height: 1.04;
+            letter-spacing: -0.03em;
+            margin: 0 0 10px;
+            font-weight: 800;
+        }
+        .screen-title em{
+            font-family: var(--font-serif);
+            font-style: italic;
+            color: var(--accent);
+            font-weight: 400;
+        }
+        .screen-sub{
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        .loader{
+            margin-top: 22px;
+            height: 10px;
+            border-radius: 999px;
+            background: var(--surface-2);
+            overflow: hidden;
+            border: 1px solid var(--line);
+        }
+        .loader::before{
+            content:'';
+            display:block;
+            height:100%;
+            width:38%;
+            border-radius:999px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-3));
+            animation: loading 1.4s ease-in-out infinite;
+        }
+        @keyframes loading{
+            0%{ transform: translateX(-120%); }
+            100%{ transform: translateX(300%); }
+        }
+
+        .form-group{ margin-top: 22px; }
+        .form-label{
+            display: block;
+            margin-bottom: 7px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--ink-2);
+        }
+        .form-row{ display: flex; gap: 8px; }
+        .form-control{
+            flex: 1;
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--line);
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: var(--font-kr);
+            color: var(--ink);
+            outline: none;
+            background: var(--surface);
+        }
+        .form-control:focus{
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 14%, transparent);
+        }
+        .form-control[readonly]{ background: var(--surface-2); cursor: pointer; }
+
+        .btn{
+            border: none;
+            border-radius: 12px;
+            font-family: var(--font-kr);
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s, filter .15s, box-shadow .15s;
+        }
+        .btn-secondary{
+            padding: 12px 14px;
+            background: var(--surface-2);
+            color: var(--ink-2);
+            border: 1.5px solid var(--line);
+            white-space: nowrap;
+        }
+        .btn-secondary:hover{ background: var(--line); }
+        .btn-primary{
+            background: linear-gradient(135deg, var(--accent), #0E8AB8);
+            color: #fff;
+            box-shadow: 0 6px 18px -6px rgba(31,166,214,.55);
+        }
+        .btn-primary:hover{
+            filter: brightness(1.06);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 26px -8px rgba(31,166,214,.65);
+        }
+        .btn-full{
+            width: 100%;
+            padding: 13px 18px;
+            margin-top: 14px;
+        }
+
+        .toast-container{
+            position: fixed; left: 50%; bottom: 28px;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex; flex-direction: column; gap: 8px;
+            pointer-events: none;
+        }
+        .toast{
+            background: var(--ink); color: #fff;
+            padding: 11px 20px;
+            border-radius: 999px;
+            font-size: 13px;
+            box-shadow: var(--shadow-3);
+            animation: toastIn .25s cubic-bezier(.2,.7,.2,1);
+        }
+        .toast.error{ background: var(--warn); }
+        .toast.success{ background: var(--ok); }
+        @keyframes toastIn{
+            from{ opacity: 0; transform: translateY(10px); }
+            to{ opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
 
 <!-- 주소 입력 필요 없을 때: 로딩 화면만 표시 -->
-<div id="loadingScreen" style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;">
-    <div style="font-size:2rem;">🔐</div>
-    <div style="font-size:1rem;color:var(--gray-600);">로그인 처리 중...</div>
+<div id="loadingScreen" class="screen" style="display:block;">
+    <div class="screen-eyebrow">Social Login</div>
+    <h1 class="screen-title">로그인 <em>처리 중</em></h1>
+    <p class="screen-sub">계정 정보를 확인하고 LocalMeet로 이동하고 있어요.</p>
+    <div class="loader"></div>
 </div>
 
 <!-- 주소 입력 필요할 때 -->
-<div id="addressScreen" style="display:none;align-items:center;justify-content:center;height:100vh;">
-    <div class="auth-card" style="max-width:480px;width:100%;">
-        <div class="auth-title">동네를 알려주세요 📍</div>
-        <div class="auth-subtitle">내 동네를 설정하면 근처 모임을 찾을 수 있어요</div>
+<div id="addressScreen" class="screen" style="display:none;">
+    <div class="screen-eyebrow">Set your area</div>
+    <h1 class="screen-title">동네를 <em>알려주세요</em></h1>
+    <p class="screen-sub">내 동네를 설정하면 근처 모임을 더 정확하게 추천받을 수 있어요.</p>
 
-        <div class="form-group" style="margin-top:24px;">
-            <label class="form-label">동네 주소</label>
-            <div style="display:flex;gap:8px;">
-                <input type="text" id="userAddress" class="form-control" placeholder="예: 서울 마포구 합정동" readonly>
-                <button class="btn btn-secondary" onclick="searchAddress()" style="white-space:nowrap;">검색</button>
-            </div>
+    <div class="form-group">
+        <label class="form-label">동네 주소</label>
+        <div class="form-row">
+            <input type="text" id="userAddress" class="form-control" placeholder="예: 서울 마포구 합정동" readonly>
+            <button class="btn btn-secondary" onclick="searchAddress()">검색</button>
         </div>
-        <input type="hidden" id="userLat" value="0">
-        <input type="hidden" id="userLng" value="0">
-
-        <button class="btn btn-primary btn-full" style="margin-top:16px;" onclick="saveAddress()">저장하고 시작하기</button>
     </div>
+    <input type="hidden" id="userLat" value="0">
+    <input type="hidden" id="userLng" value="0">
+
+    <button class="btn btn-primary btn-full" onclick="saveAddress()">저장하고 시작하기</button>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -46,7 +248,7 @@
 
         if (needAddress) {
             document.getElementById('loadingScreen').style.display = 'none';
-            document.getElementById('addressScreen').style.display = 'flex';
+            document.getElementById('addressScreen').style.display = 'block';
             loadScripts();
         } else {
             location.href = '/view/meetings';
