@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-// Spring Security가 로그인 시 DB에서 유저 정보를 조회하는 서비스
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
