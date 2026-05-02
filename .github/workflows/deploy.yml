@@ -92,7 +92,7 @@ jobs:
           fi
           sleep 2
 
-          nohup java -jar *.jar > app.log 2>&1 &
+          nohup java -Xms128m -Xmx512m -jar *.jar > app.log 2>&1 &
           echo $! > app.pid
           sleep 5
 
