@@ -93,15 +93,13 @@ jobs:
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} bash -s << 'ENDSSH'
           cd ~/localmeet
 
-          if [ -f app.pid ]; then
-            kill -9 $(cat app.pid) 2>/dev/null || true
-            rm -f app.pid
-          fi
-          sleep 2
+          # 기존 Java 프로세스 종료 (방식 무관하게 전부 종료)
+          pkill -f "java.*jar" 2>/dev/null || true
+          sleep 3
 
           nohup java -Xms128m -Xmx512m -jar *.jar > app.log 2>&1 &
           echo $! > app.pid
-          sleep 5
+          sleep 10
 
           if kill -0 $(cat app.pid) 2>/dev/null; then
             echo "배포 성공 (PID: $(cat app.pid))"
