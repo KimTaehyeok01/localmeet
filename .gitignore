@@ -23,3 +23,8 @@ Thumbs.db
 logs/
 
 .claude/
+
+# Python
+fastapi/__pycache__/
+fastapi/**/__pycache__/
+fastapi/**/*.pyc
