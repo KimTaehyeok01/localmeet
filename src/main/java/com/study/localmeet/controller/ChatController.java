@@ -62,8 +62,12 @@ public class ChatController {
         }
 
         String userEmail = authentication.getName();
-        ChatMessageDto savedDto = chatService.save(meetingIdx, userEmail, chatContent.trim());
-        messagingTemplate.convertAndSend("/topic/meeting/" + meetingIdx, savedDto);
-        return ResponseEntity.ok(savedDto);
+        try {
+            ChatMessageDto savedDto = chatService.save(meetingIdx, userEmail, chatContent.trim());
+            messagingTemplate.convertAndSend("/topic/meeting/" + meetingIdx, savedDto);
+            return ResponseEntity.ok(savedDto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 }
