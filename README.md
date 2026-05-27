@@ -29,9 +29,11 @@ http://13.209.110.13
 > 위치 기반으로 동네 모임을 개설하고, 참가 신청부터 실시간 채팅까지 지원하는 커뮤니티 플랫폼
 
 - 카카오맵 기반으로 내 동네에서 열리는 모임을 탐색하고 참가 신청할 수 있다.
+- 운동·게임·공부·맛집 등 **9가지 카테고리**로 모임을 분류하고 필터링할 수 있다.
+- **오늘 날씨에 맞는 모임 카테고리를 자동으로 추천**해준다. (OpenWeatherMap API + FastAPI)
+- 모임별 실시간 채팅 시 **욕설을 자동 감지·차단**한다. (FastAPI 욕설 필터)
 - 모임장은 참가 신청을 승인/거절하고, 모임 상태를 관리할 수 있다.
-- 모임별 실시간 채팅과 SSE 알림으로 참가자들이 즉각적으로 소통할 수 있다.
-- 카카오, 구글 소셜 로그인을 지원한다.
+- 카카오, 네이버 소셜 로그인을 지원한다.
 
 ---
 
@@ -55,6 +57,8 @@ http://13.209.110.13
   <img src="https://img.shields.io/badge/OAuth2-EB5424?style=flat-square&logo=auth0&logoColor=white"/>
   <img src="https://img.shields.io/badge/WebSocket (STOMP)-010101?style=flat-square&logo=socketdotio&logoColor=white"/>
   <img src="https://img.shields.io/badge/SSE-FF6C37?style=flat-square&logo=postman&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Python 3.12-3776AB?style=flat-square&logo=python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white"/>
 </p>
 
 ### Frontend
@@ -88,6 +92,8 @@ http://13.209.110.13
 #### 2단계 — 모임 탐색
 - 전체 모임 목록을 **카카오맵 마커**로 시각화해 위치를 한눈에 파악할 수 있습니다.
 - 동네 주소 키워드로 검색하면 해당 지역의 모임만 필터링됩니다.
+- 운동·게임·공부·맛집 등 **9가지 카테고리 탭**으로 원하는 종류의 모임만 모아볼 수 있습니다.
+- **오늘 날씨를 분석해** 맑으면 운동·여행, 비오면 게임·공부·IT 등 적합한 카테고리를 자동 추천합니다.
 - 모임 카드에서 **제목, 장소, 현재 참가 인원, 상태(모집중 / 모집완료 / 종료)**를 확인할 수 있으며, `모집중` 상태의 모임만 참가 신청이 활성화됩니다.
 
 #### 3단계 — 참가 신청
@@ -99,6 +105,7 @@ http://13.209.110.13
 - 모임 상세 페이지 하단에 **WebSocket(STOMP) 기반 채팅창**이 내장되어 있습니다.
 - 입장 시 기존 채팅 내역이 오래된 순으로 자동 로드됩니다.
 - STOMP 헤더의 JWT 토큰으로 인증이 처리되어, 인증된 사용자만 메시지를 전송할 수 있습니다.
+- 메시지 전송 전 **FastAPI 욕설 감지 API**를 호출하여 부적절한 언어가 포함된 메시지를 차단합니다.
 
 ---
 
@@ -106,6 +113,7 @@ http://13.209.110.13
 
 #### 1단계 — 모임 개설
 - **카카오 주소 검색 API**로 모임 장소를 선택하고, 제목·내용·최대 인원을 입력해 모임을 개설합니다.
+- 카테고리 칩을 선택해 모임 종류를 지정할 수 있습니다. (운동·게임·공부·맛집·취미·여행·반려동물·IT·기타)
 - 개설 직후 상태는 `OPEN(모집중)`이며, 카카오맵에 마커로 즉시 표시됩니다.
 
 #### 2단계 — 참가 신청 승인·거절
@@ -224,9 +232,13 @@ src/main/java/com/study/localmeet/
 │   ├── meeting/
 │   └── chat/
 │
+├── client/
+│   └── FastApiClient.java            # FastAPI 호출 클라이언트 (욕설감지 / 날씨추천)
+│
 ├── enumeration/                      # 열거형
 │   ├── UserRole.java                 # ROLE_USER, ROLE_ADMIN
-│   └── MeetingStatus.java            # OPEN, FULL, CLOSED
+│   ├── MeetingStatus.java            # OPEN, FULL, CLOSED
+│   └── MeetingCategory.java          # SPORTS, GAME, STUDY, FOOD, HOBBY, TRAVEL, PET, IT, ETC
 │
 └── service/                          # 서비스 (비즈니스 로직)
     ├── AuthService.java
@@ -244,6 +256,16 @@ src/main/resources/
 ├── static/css/style.css
 ├── application.properties
 └── db.sql
+
+fastapi/                              # Python FastAPI 서버 (포트 8000)
+├── main.py                           # FastAPI 앱 진입점
+├── requirements.txt
+├── routers/
+│   ├── chat_router.py                # POST /chat/filter (욕설 감지)
+│   └── weather_router.py             # GET /weather/recommend (날씨 추천)
+└── services/
+    ├── profanity_service.py          # 한국어 욕설 감지 로직
+    └── weather_service.py            # OpenWeatherMap API 연동
 ```
 
 ---
@@ -275,6 +297,7 @@ erDiagram
         DOUBLE meeting_lng
         INT meeting_max
         VARCHAR meeting_status
+        VARCHAR meeting_category
         DATETIME created_at
         BIGINT user_idx FK
     }
@@ -321,6 +344,16 @@ erDiagram
 
 **모임 상태 자동 전환**  
 참가 승인 시 승인 인원이 최대 인원에 도달하면 모임 상태가 `OPEN → FULL`로 자동 변경되어 추가 신청을 막습니다.
+
+**FastAPI 연동 (MSA 구조)**  
+Spring Boot(8080)와 별도로 Python FastAPI 서버(8000)를 운영합니다.  
+욕설 감지와 날씨 추천 기능을 FastAPI에서 담당하며, Spring Boot는 `RestTemplate`으로 필요 시 호출합니다.  
+FastAPI가 다운되어도 Spring Boot는 정상 동작하도록 `fail-open` 방식으로 처리했습니다.
+
+**날씨 기반 모임 추천**  
+브라우저 Geolocation API로 사용자 위치를 가져와 OpenWeatherMap API에 요청합니다.  
+날씨 코드에 따라 맑음 → 운동·여행·반려동물, 비 → 게임·공부·IT 등 카테고리를 추천합니다.  
+HTTP(비HTTPS) 환경에서 Geolocation이 차단되는 경우 서울 기본 좌표로 폴백 처리했습니다.
 
 ---
 
@@ -406,15 +439,18 @@ main 브랜치 push
     ↓
 GitHub Actions 워크플로우 실행
     ↓
-Gradle 빌드 (./gradlew build)
+Gradle 빌드 (./gradlew bootJar)
     ↓
 SSH로 EC2 접속
     ↓
-기존 프로세스 종료 → JAR 파일 전송 → nohup으로 서버 재시작
+JAR 파일 + fastapi/ 폴더 전송
+    ↓
+기존 프로세스 종료 → nohup으로 Spring Boot 재시작
 ```
 
 - 빌드와 배포가 자동화되어 있어 코드 변경 후 별도의 수동 배포 없이 운영 서버에 즉시 반영됩니다.
 - `nohup`으로 백그라운드 실행하여 SSH 세션이 종료되어도 서버가 계속 동작합니다.
+- FastAPI는 `systemd` 서비스로 등록되어 EC2 재부팅 시에도 자동으로 시작됩니다.
 
 ---
 
@@ -435,8 +471,10 @@ SSH로 EC2 접속
 | 전체 설계 및 구현 |
 | JWT 인증 / OAuth2 소셜 로그인 |
 | 모임 CRUD / 참가 신청·승인 |
+| 모임 카테고리 분류 및 필터링 |
 | WebSocket 실시간 채팅 |
 | SSE 실시간 알림 |
+| FastAPI 욕설 감지 / 날씨 기반 모임 추천 |
 | 카카오맵 API 연동 |
 | 관리자 페이지 |
-| AWS EC2 배포 |
+| AWS EC2 배포 (GitHub Actions + systemd) |
