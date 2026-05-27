@@ -49,6 +49,7 @@ jobs:
           NAVER_CLIENT_ID=$NAVER_CLIENT_ID
           NAVER_CLIENT_SECRET=$NAVER_CLIENT_SECRET
           NAVER_REDIRECT_URI=$NAVER_REDIRECT_URI
+          FASTAPI_URL=http://localhost:8000
           EOF
 
       - name: Grant execute permission for gradlew
@@ -78,6 +79,12 @@ jobs:
         run: |
           scp -i ~/.ssh/deploy_key.pem -o StrictHostKeyChecking=no \
             build/libs/*.jar \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/localmeet/
+
+      - name: Copy FastAPI to EC2
+        run: |
+          scp -i ~/.ssh/deploy_key.pem -o StrictHostKeyChecking=no -r \
+            fastapi \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/localmeet/
 
       - name: Deploy on EC2
