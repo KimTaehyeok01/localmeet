@@ -1,5 +1,6 @@
 package com.study.localmeet.service;
 
+import com.study.localmeet.client.FastApiClient;
 import com.study.localmeet.domain.chat.ChatMessage;
 import com.study.localmeet.domain.chat.ChatMessageRepository;
 import com.study.localmeet.domain.meeting.Meeting;
@@ -21,10 +22,16 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final MeetingRepository meetingRepository;
     private final UsersRepository usersRepository;
+    private final FastApiClient fastApiClient;
 
     // 채팅 메시지 저장
     @Transactional
     public ChatMessageDto save(Long meetingIdx, String userEmail, String chatContent) {
+        // 욕설 감지
+        if (fastApiClient.isProfane(chatContent)) {
+            throw new IllegalArgumentException("부적절한 언어가 포함되어 있습니다.");
+        }
+
         Meeting meeting = meetingRepository.findById(meetingIdx)
                 .orElseThrow(() -> new IllegalArgumentException("없는 모임입니다."));
         Users users = usersRepository.findByUserEmail(userEmail)

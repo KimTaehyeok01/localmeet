@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 "/view/meetings/**", "/view/oauth2/**",
                                 "/api/auth/**",
                                 "/api/meetings", "/api/meetings/**",
+                                "/api/weather/**",
                                 "/css/**", "/js/**", "/images/**",
                                 "/ws/**",
                                 "/login/oauth2/**", "/oauth2/**"

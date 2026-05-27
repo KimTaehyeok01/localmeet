@@ -682,6 +682,49 @@
     }
 
     /* ─────────────────────────────
+       날씨 추천 배너
+    ───────────────────────────── */
+    .weather-banner{
+      background: linear-gradient(135deg,
+        color-mix(in oklab, var(--accent-2) 18%, var(--surface)),
+        var(--surface));
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 18px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      box-shadow: var(--shadow-1);
+      flex-wrap: wrap;
+    }
+    .weather-left{ display: flex; align-items: center; gap: 14px; }
+    .weather-emoji{ font-size: 38px; line-height: 1; }
+    .weather-info-desc{ font-size: 15px; font-weight: 700; color: var(--ink); }
+    .weather-info-temp{ font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .weather-right{ display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .weather-hint{
+      font-size: 12.5px; color: var(--muted);
+      font-family: var(--font-mono);
+      letter-spacing: .06em;
+      white-space: nowrap;
+    }
+    .weather-cats{ display: flex; gap: 8px; flex-wrap: wrap; }
+    .weather-cat-btn{
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1.5px solid var(--accent);
+      background: color-mix(in oklab, var(--accent) 10%, white);
+      color: var(--accent);
+      font-size: 12.5px; font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      font-family: var(--font-kr);
+    }
+    .weather-cat-btn:hover{ background: var(--accent); color: #fff; }
+
+    /* ─────────────────────────────
        FAB — 그라데이션 + 크게
     ───────────────────────────── */
     .fab{
@@ -839,6 +882,21 @@
   <div class="section-header">
     <div class="section-title">전체 모임</div>
     <div class="section-count" id="listCount"></div>
+  </div>
+
+  <!-- 날씨 추천 배너 (JS로 표시) -->
+  <div id="weatherBanner" class="weather-banner" style="display:none;">
+    <div class="weather-left">
+      <div class="weather-emoji" id="weatherEmoji">☀️</div>
+      <div>
+        <div class="weather-info-desc" id="weatherDesc">날씨 로딩 중</div>
+        <div class="weather-info-temp" id="weatherTemp"></div>
+      </div>
+    </div>
+    <div class="weather-right">
+      <span class="weather-hint">오늘 날씨엔 이런 모임 어때요?</span>
+      <div class="weather-cats" id="weatherCats"></div>
+    </div>
   </div>
 
   <!-- 카테고리 필터 -->
@@ -1003,6 +1061,35 @@
           </div>
         </div>`;
     }).join('');
+  }
+
+  // 날씨 추천 배너
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      fetch(`/api/weather/recommend?lat=${lat}&lng=${lng}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) return;
+          document.getElementById('weatherEmoji').textContent = data.emoji;
+          document.getElementById('weatherDesc').textContent  = `${data.desc}${data.city ? ' · ' + data.city : ''}`;
+          document.getElementById('weatherTemp').textContent  = `${data.temp}°C`;
+          const catsEl = document.getElementById('weatherCats');
+          catsEl.innerHTML = '';
+          (data.categories || []).forEach((cat, i) => {
+            const btn = document.createElement('button');
+            btn.className   = 'weather-cat-btn';
+            btn.textContent = data.categoryLabels[i] || cat;
+            btn.onclick = () => {
+              const tab = document.querySelector(`.cat-tab[data-cat="${cat}"]`);
+              if (tab) filterByCategory(tab);
+            };
+            catsEl.appendChild(btn);
+          });
+          document.getElementById('weatherBanner').style.display = 'flex';
+        })
+        .catch(() => {});
+    }, () => {});
   }
 
   function showToast(msg, type = '') {
