@@ -175,7 +175,8 @@ FULL ──→ OPEN (참가자 취소 시 자동 복구)
 
 > 카카오 주소 검색 API로 모임 장소를 선택하고, 제목·내용·최대 인원을 입력해 모임을 개설할 수 있다.
 
-![모임 등록](readme_assets/meeting-write.png)
+![모임 등록](readme_assets/meeting-write1.png)
+![모임 등록](readme_assets/meeting-write2.png)
 
 ---
 
