@@ -213,6 +213,32 @@
       box-shadow: 0 6px 18px -6px rgba(31,166,214,.55);
     }
     .btn-join:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+    .btn-cancel{
+      flex: 1;
+      background: color-mix(in oklab, var(--danger) 12%, white);
+      color: color-mix(in oklab, var(--danger) 85%, var(--ink));
+      border: 1px solid color-mix(in oklab, var(--danger) 30%, transparent);
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-family: var(--font-kr);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s, filter .15s, background .15s;
+    }
+    .btn-cancel:hover{ background: color-mix(in oklab, var(--danger) 20%, white); }
+    .btn-cancel-approved{
+      flex: 1;
+      background: color-mix(in oklab, var(--muted) 12%, white);
+      color: var(--muted);
+      border: 1px solid color-mix(in oklab, var(--muted) 30%, transparent);
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-family: var(--font-kr);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: not-allowed;
+    }
     .btn-edit{
       flex: 1;
       background: var(--surface-2);
@@ -316,6 +342,49 @@
       to{ opacity: 1; transform: translateY(0); }
     }
 
+    /* 참가자 목록 */
+    .member-list{
+      display: flex; flex-wrap: wrap; gap: 10px;
+      padding: 18px 20px;
+    }
+    .member-chip{
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1.5px solid;
+    }
+    .member-chip-avatar{
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .member-chip.approved{
+      background: color-mix(in oklab, var(--ok) 10%, white);
+      color: color-mix(in oklab, var(--ok) 80%, var(--ink));
+      border-color: color-mix(in oklab, var(--ok) 30%, transparent);
+    }
+    .member-chip.approved .member-chip-avatar{
+      background: color-mix(in oklab, var(--ok) 20%, white);
+      color: color-mix(in oklab, var(--ok) 90%, var(--ink));
+    }
+    .member-chip.pending{
+      background: color-mix(in oklab, var(--warn) 10%, white);
+      color: color-mix(in oklab, var(--warn) 80%, var(--ink));
+      border-color: color-mix(in oklab, var(--warn) 30%, transparent);
+    }
+    .member-chip.pending .member-chip-avatar{
+      background: color-mix(in oklab, var(--warn) 20%, white);
+      color: color-mix(in oklab, var(--warn) 90%, var(--ink));
+    }
+    .member-empty{
+      padding: 18px 20px;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
     @media (max-width: 760px){
       .detail-hero{ margin: 14px 16px 0; padding: 22px 20px; }
       .page-body{ padding: 14px 16px 46px; }
@@ -358,6 +427,13 @@
 
 <div class="page-body">
   <div class="action-card" id="actionArea"></div>
+
+  <div class="section-card">
+    <div class="section-card-header">👥 참가자 목록</div>
+    <div id="memberList" class="member-list">
+      <span class="member-empty">불러오는 중...</span>
+    </div>
+  </div>
 
   <div class="section-card">
     <div class="section-card-header">📋 모임 소개</div>
@@ -435,8 +511,21 @@
           <button class="btn-edit" onclick="location.href='/view/meetings/${meetingIdx}/edit'">✏️ 모임 수정</button>
           <button class="btn-delete" onclick="deleteMeeting()">🗑️ 삭제</button>`;
       } else {
-        actionArea.innerHTML = `
-          <button class="btn-join" onclick="joinMeeting()">✋ 참가 신청하기</button>`;
+        // 참가 상태 확인
+        fetch(`/api/meetings/${meetingIdx}/my-status`, { headers: { 'JWT_TOKEN': token } })
+        .then(r => r.json())
+        .then(res => {
+          if (res.status === 'APPROVED') {
+            actionArea.innerHTML = `<button class="btn-cancel-approved" disabled>✅ 참가 확정 (취소 불가)</button>`;
+          } else if (res.status === 'PENDING') {
+            actionArea.innerHTML = `<button class="btn-cancel" onclick="cancelMeeting()">❌ 참가 신청 취소</button>`;
+          } else {
+            actionArea.innerHTML = `<button class="btn-join" onclick="joinMeeting()">✋ 참가 신청하기</button>`;
+          }
+        })
+        .catch(() => {
+          actionArea.innerHTML = `<button class="btn-join" onclick="joinMeeting()">✋ 참가 신청하기</button>`;
+        });
       }
     });
   } else {
@@ -451,6 +540,45 @@
 
   function joinMeeting() {
     fetch(`/api/meetings/${meetingIdx}/join`, { method:'POST', headers:{'JWT_TOKEN':token} })
+    .then(r => r.json())
+    .then(data => {
+      showToast(data.message, data.success ? 'success' : 'error');
+      if (data.success) setTimeout(() => location.reload(), 1000);
+      else loadMembers();
+    })
+    .catch(() => showToast('서버 오류가 발생했습니다.', 'error'));
+  }
+
+  // 참가자 목록 로드
+  function loadMembers() {
+    fetch(`/api/meetings/${meetingIdx}/members`)
+    .then(r => r.json())
+    .then(members => {
+      const list = document.getElementById('memberList');
+      if (!members || members.length === 0) {
+        list.innerHTML = '<span class="member-empty">아직 참가 신청한 멤버가 없습니다.</span>';
+        return;
+      }
+      list.innerHTML = members.map(m => {
+        const initial = m.userNickname ? m.userNickname.charAt(0).toUpperCase() : '?';
+        const cls     = m.approved ? 'approved' : 'pending';
+        const label   = m.approved ? '✓ 확정' : '대기중';
+        return `<div class="member-chip ${cls}">
+          <span class="member-chip-avatar">${initial}</span>
+          <span>${m.userNickname}</span>
+          <span style="font-size:11px;opacity:.75;">${label}</span>
+        </div>`;
+      }).join('');
+    })
+    .catch(() => {
+      document.getElementById('memberList').innerHTML = '<span class="member-empty">참가자 정보를 불러올 수 없습니다.</span>';
+    });
+  }
+  loadMembers();
+
+  function cancelMeeting() {
+    if (!confirm('참가 신청을 취소하시겠습니까?')) return;
+    fetch(`/api/meetings/${meetingIdx}/cancel`, { method:'DELETE', headers:{'JWT_TOKEN':token} })
     .then(r => r.json())
     .then(data => {
       showToast(data.message, data.success ? 'success' : 'error');

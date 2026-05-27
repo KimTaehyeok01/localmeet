@@ -1,5 +1,6 @@
 package com.study.localmeet.controller;
 
+import com.study.localmeet.dto.meeting.MeetingMemberDto;
 import com.study.localmeet.dto.meeting.MeetingResponseDto;
 import com.study.localmeet.dto.meeting.MeetingSaveRequestDto;
 import com.study.localmeet.service.MeetingService;
@@ -101,6 +102,49 @@ public class MeetingController {
                     "[" + meetingDto.getMeetingTitle() + "] 새로운 참가 신청이 있습니다."
             );
 
+            result.put("success", true);
+            result.put("message", message);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
+    @GetMapping("/{meetingIdx}/members")
+    public ResponseEntity<List<MeetingMemberDto>> getMembers(@PathVariable Long meetingIdx) {
+        return ResponseEntity.ok(meetingService.getMembers(meetingIdx));
+    }
+
+    @GetMapping("/{meetingIdx}/my-status")
+    public ResponseEntity<Map<String, Object>> myStatus(@PathVariable Long meetingIdx,
+                                                        Authentication authentication) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        if (authentication == null || authentication.getName() == null) {
+            result.put("success", true);
+            result.put("status", "NONE");
+            return ResponseEntity.ok(result);
+        }
+        try {
+            String status = meetingService.getMyStatus(meetingIdx, authentication.getName());
+            result.put("success", true);
+            result.put("status", status);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("status", "NONE");
+            return ResponseEntity.ok(result);
+        }
+    }
+
+    @DeleteMapping("/{meetingIdx}/cancel")
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    public ResponseEntity<Map<String, Object>> cancel(@PathVariable Long meetingIdx,
+                                                      Authentication authentication) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        try {
+            String message = meetingService.cancel(meetingIdx, authentication.getName());
             result.put("success", true);
             result.put("message", message);
             return ResponseEntity.ok(result);

@@ -7,6 +7,7 @@ import com.study.localmeet.domain.meetingmember.MeetingMember;
 import com.study.localmeet.domain.meetingmember.MeetingMemberRepository;
 import com.study.localmeet.domain.user.Users;
 import com.study.localmeet.domain.user.UsersRepository;
+import com.study.localmeet.dto.meeting.MeetingMemberDto;
 import com.study.localmeet.dto.meeting.MeetingResponseDto;
 import com.study.localmeet.dto.meeting.MeetingSaveRequestDto;
 import com.study.localmeet.enumeration.MeetingStatus;
@@ -107,6 +108,38 @@ public class MeetingService {
     }
 
     @Transactional
+    public String cancel(Long meetingIdx, String userEmail) {
+        Users users = usersRepository.findByUserEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+        MeetingMember meetingMember = meetingMemberRepository
+                .findByMeeting_MeetingIdxAndUsers_UserIdx(meetingIdx, users.getUserIdx())
+                .orElseThrow(() -> new IllegalArgumentException("참가 신청 내역이 없습니다."));
+
+        meetingMemberRepository.delete(meetingMember);
+
+        // 모임 상태가 FULL이었다면 다시 OPEN으로
+        Meeting meeting = meetingRepository.findById(meetingIdx)
+                .orElseThrow(() -> new IllegalArgumentException("없는 모임입니다."));
+        if (meeting.getMeetingStatus() == MeetingStatus.FULL) {
+            meeting.updateStatus(MeetingStatus.OPEN);
+        }
+
+        return "참가 신청이 취소되었습니다.";
+    }
+
+    @Transactional(readOnly = true)
+    public String getMyStatus(Long meetingIdx, String userEmail) {
+        Users users = usersRepository.findByUserEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+        return meetingMemberRepository
+                .findByMeeting_MeetingIdxAndUsers_UserIdx(meetingIdx, users.getUserIdx())
+                .map(mm -> mm.isApproved() ? "APPROVED" : "PENDING")
+                .orElse("NONE");
+    }
+
+    @Transactional
     public String approve(Long mmIdx, String userEmail) {
         MeetingMember meetingMember = meetingMemberRepository.findById(mmIdx)
                 .orElseThrow(() -> new IllegalArgumentException("참가 신청 정보가 없습니다."));
@@ -139,6 +172,14 @@ public class MeetingService {
             dto.setCurrentCount(countMap.getOrDefault(meeting.getMeetingIdx(), 0));
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<MeetingMemberDto> getMembers(Long meetingIdx) {
+        return meetingMemberRepository.findAllByMeeting_MeetingIdx(meetingIdx)
+                .stream()
+                .map(MeetingMemberDto::new)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
