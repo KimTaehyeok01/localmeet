@@ -152,6 +152,14 @@
     .h-badge-full::before{ background: #ffc19e; }
     .h-badge-closed{ background: rgba(255,255,255,.16); color: rgba(255,255,255,.74); border-color: rgba(255,255,255,.3); }
     .h-badge-closed::before{ background: rgba(255,255,255,.7); }
+    .h-badge-category{
+      background: rgba(255,255,255,.18);
+      color: #fff;
+      border-color: rgba(255,255,255,.35);
+      font-weight: 600;
+      letter-spacing: .01em;
+    }
+    .h-badge-category::before{ display: none; }
 
     .page-body{
       max-width: 1180px;
@@ -336,6 +344,7 @@
     <a href="/view/meetings" class="back-link">← 목록으로</a>
     <div class="hero-badge-row">
       <span id="statusBadge" class="h-badge">모집중</span>
+      <span id="categoryBadge" class="h-badge h-badge-category" style="display:none;"></span>
     </div>
     <div class="hero-title" th:text="${dto.meetingTitle}">모임 제목</div>
     <div class="hero-meta">
@@ -380,6 +389,7 @@
   const meetingLng        = /*[[${dto.meetingLng}]]*/ null;
   const meetingWriterNick = /*[[${dto.userNickname}]]*/ '';
   const meetingStatus     = /*[[${dto.meetingStatus.name()}]]*/ 'OPEN';
+  const meetingCategory   = /*[[${dto.meetingCategory != null ? dto.meetingCategory.value : ''}]]*/ '';
   const kakaoMapApiKey    = /*[[${@environment.getProperty('kakao.map.api-key')}]]*/ '';
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
@@ -396,6 +406,13 @@
     navMenu.innerHTML += `<a href="/view/login">로그인</a>`;
   }
   function doLogout() { localStorage.removeItem('JWT_TOKEN'); document.cookie = 'JWT_TOKEN=; path=/; max-age=0'; location.href='/view/login'; }
+
+  // 카테고리 배지
+  if (meetingCategory) {
+    const catBadge = document.getElementById('categoryBadge');
+    catBadge.textContent = meetingCategory;
+    catBadge.style.display = '';
+  }
 
   // 히어로 배지 상태
   const badge = document.getElementById('statusBadge');

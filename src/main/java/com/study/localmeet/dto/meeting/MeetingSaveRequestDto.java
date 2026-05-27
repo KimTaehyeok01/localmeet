@@ -2,6 +2,7 @@ package com.study.localmeet.dto.meeting;
 
 import com.study.localmeet.domain.meeting.Meeting;
 import com.study.localmeet.domain.user.Users;
+import com.study.localmeet.enumeration.MeetingCategory;
 import com.study.localmeet.enumeration.MeetingStatus;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -27,6 +28,8 @@ public class MeetingSaveRequestDto {
     @Min(value = 2, message = "최소 2명 이상이어야 합니다.")
     private Integer meetingMax;
 
+    private MeetingCategory meetingCategory;
+
     public Meeting toEntity(Users users) {
         return Meeting.builder()
                 .meetingTitle(meetingTitle)
@@ -35,6 +38,7 @@ public class MeetingSaveRequestDto {
                 .meetingLat(meetingLat)
                 .meetingLng(meetingLng)
                 .meetingMax(meetingMax)
+                .meetingCategory(meetingCategory != null ? meetingCategory : MeetingCategory.ETC)
                 .meetingStatus(MeetingStatus.OPEN)
                 .users(users)
                 .build();

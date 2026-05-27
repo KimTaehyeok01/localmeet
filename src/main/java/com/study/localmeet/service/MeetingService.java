@@ -65,7 +65,7 @@ public class MeetingService {
         }
 
         entity.update(dto.getMeetingTitle(), dto.getMeetingContent(), dto.getMeetingAddress(),
-                dto.getMeetingLat(), dto.getMeetingLng(), dto.getMeetingMax());
+                dto.getMeetingLat(), dto.getMeetingLng(), dto.getMeetingMax(), dto.getMeetingCategory());
         return true;
     }
 

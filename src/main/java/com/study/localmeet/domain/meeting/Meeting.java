@@ -1,6 +1,7 @@
 package com.study.localmeet.domain.meeting;
 
 import com.study.localmeet.domain.user.Users;
+import com.study.localmeet.enumeration.MeetingCategory;
 import com.study.localmeet.enumeration.MeetingStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,6 +41,10 @@ public class Meeting {
     private Integer meetingMax;  // 최대 인원
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "meeting_category", nullable = false, length = 20)
+    private MeetingCategory meetingCategory;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "meeting_status", nullable = false, length = 20)
     private MeetingStatus meetingStatus;
 
@@ -60,26 +65,29 @@ public class Meeting {
     @Builder
     public Meeting(String meetingTitle, String meetingContent, String meetingAddress,
                    Double meetingLat, Double meetingLng, Integer meetingMax,
-                   MeetingStatus meetingStatus, Users users) {
+                   MeetingCategory meetingCategory, MeetingStatus meetingStatus, Users users) {
         this.meetingTitle = meetingTitle;
         this.meetingContent = meetingContent;
         this.meetingAddress = meetingAddress;
         this.meetingLat = meetingLat;
         this.meetingLng = meetingLng;
         this.meetingMax = meetingMax;
+        this.meetingCategory = meetingCategory != null ? meetingCategory : MeetingCategory.ETC;
         this.meetingStatus = meetingStatus != null ? meetingStatus : MeetingStatus.OPEN;
         this.users = users;
     }
 
     // 모임 수정
     public void update(String meetingTitle, String meetingContent, String meetingAddress,
-                       Double meetingLat, Double meetingLng, Integer meetingMax) {
+                       Double meetingLat, Double meetingLng, Integer meetingMax,
+                       MeetingCategory meetingCategory) {
         this.meetingTitle = meetingTitle;
         this.meetingContent = meetingContent;
         this.meetingAddress = meetingAddress;
         this.meetingLat = meetingLat;
         this.meetingLng = meetingLng;
         this.meetingMax = meetingMax;
+        this.meetingCategory = meetingCategory != null ? meetingCategory : MeetingCategory.ETC;
     }
 
     // 모임 상태 변경

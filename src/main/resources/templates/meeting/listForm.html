@@ -646,6 +646,41 @@
     }
     .badge-closed::before{ background: var(--muted-2); }
 
+    /* 카테고리 필터 탭 */
+    .category-filter{
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .cat-tab{
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      font-size: 13px; font-weight: 600; color: var(--ink-2);
+      font-family: var(--font-kr);
+      cursor: pointer;
+      transition: border-color .15s, background .15s, color .15s;
+      user-select: none;
+    }
+    .cat-tab:hover{ border-color: var(--accent); background: var(--surface-2); }
+    .cat-tab.active{
+      border-color: var(--accent);
+      background: color-mix(in oklab, var(--accent) 12%, white);
+      color: var(--accent);
+    }
+    /* 카드 카테고리 뱃지 */
+    .badge-category{
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px; font-weight: 700;
+      background: var(--surface-2);
+      color: var(--ink-2);
+      border: 1px solid var(--line);
+      margin-left: 6px;
+    }
+
     /* ─────────────────────────────
        FAB — 그라데이션 + 크게
     ───────────────────────────── */
@@ -806,6 +841,20 @@
     <div class="section-count" id="listCount"></div>
   </div>
 
+  <!-- 카테고리 필터 -->
+  <div class="category-filter">
+    <div class="cat-tab active" data-cat="ALL" onclick="filterByCategory(this)">🗂️ 전체</div>
+    <div class="cat-tab" data-cat="SPORTS" onclick="filterByCategory(this)">🏃 운동</div>
+    <div class="cat-tab" data-cat="GAME"   onclick="filterByCategory(this)">🎮 게임</div>
+    <div class="cat-tab" data-cat="STUDY"  onclick="filterByCategory(this)">📚 공부</div>
+    <div class="cat-tab" data-cat="FOOD"   onclick="filterByCategory(this)">🍽️ 맛집</div>
+    <div class="cat-tab" data-cat="HOBBY"  onclick="filterByCategory(this)">🎨 취미</div>
+    <div class="cat-tab" data-cat="TRAVEL" onclick="filterByCategory(this)">✈️ 여행</div>
+    <div class="cat-tab" data-cat="PET"    onclick="filterByCategory(this)">🐾 반려동물</div>
+    <div class="cat-tab" data-cat="IT"     onclick="filterByCategory(this)">💻 IT</div>
+    <div class="cat-tab" data-cat="ETC"    onclick="filterByCategory(this)">📌 기타</div>
+  </div>
+
   <div id="meetingGrid" class="meeting-grid">
     <div th:each="m : ${list}" class="meeting-card"
          th:onclick="|location.href='/view/meetings/${m.meetingIdx}'|">
@@ -816,6 +865,7 @@
         <div class="card-top">
           <span th:classappend="${m.meetingStatus.name() == 'OPEN'} ? 'badge-open' : (${m.meetingStatus.name() == 'FULL'} ? 'badge-full' : 'badge-closed')"
                 class="badge" th:text="${m.meetingStatus.value}">모집중</span>
+          <span class="badge-category" th:if="${m.meetingCategory != null}" th:text="${m.meetingCategory.value}"></span>
         </div>
         <div class="meeting-title" th:text="${m.meetingTitle}">모임 제목</div>
         <div class="meeting-addr">
@@ -907,6 +957,22 @@
   }
   document.getElementById('keyword').addEventListener('keypress', e => { if (e.key === 'Enter') search(); });
 
+  const categoryLabel = {
+    SPORTS:'🏃 운동', GAME:'🎮 게임', STUDY:'📚 공부', FOOD:'🍽️ 맛집',
+    HOBBY:'🎨 취미', TRAVEL:'✈️ 여행', PET:'🐾 반려동물', IT:'💻 IT', ETC:'📌 기타'
+  };
+
+  let currentData = [...initList];
+  let currentCat  = 'ALL';
+
+  function filterByCategory(el) {
+    document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    currentCat = el.dataset.cat;
+    const filtered = currentCat === 'ALL' ? currentData : currentData.filter(m => m.meetingCategory === currentCat);
+    renderGrid(filtered);
+  }
+
   function renderGrid(data) {
     const grid = document.getElementById('meetingGrid');
     if (listCountEl) listCountEl.textContent = data.length > 0 ? data.length + '개의 모임' : '';
@@ -918,12 +984,16 @@
       const badgeClass  = m.meetingStatus === 'OPEN' ? 'badge-open' : (m.meetingStatus === 'FULL' ? 'badge-full' : 'badge-closed');
       const statusText  = m.meetingStatus === 'OPEN' ? '모집중' : (m.meetingStatus === 'FULL' ? '모집완료' : '종료');
       const stripeClass = m.meetingStatus === 'FULL' ? 'full' : (m.meetingStatus === 'CLOSED' ? 'closed' : '');
+      const catLabel    = m.meetingCategory ? (categoryLabel[m.meetingCategory] || '') : '';
       return `
         <div class="meeting-card" onclick="location.href='/view/meetings/${m.meetingIdx}'">
           <div class="card-stripe ${stripeClass}"></div>
           <div class="card-inner">
             <div class="card-go"></div>
-            <div class="card-top"><span class="badge ${badgeClass}">${statusText}</span></div>
+            <div class="card-top">
+              <span class="badge ${badgeClass}">${statusText}</span>
+              ${catLabel ? `<span class="badge-category">${catLabel}</span>` : ''}
+            </div>
             <div class="meeting-title">${m.meetingTitle}</div>
             <div class="meeting-addr">📍 ${m.meetingAddress || '위치 미지정'}</div>
             <div class="card-footer">

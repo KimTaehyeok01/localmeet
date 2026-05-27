@@ -201,6 +201,28 @@
     }
     .field-input[readonly]{ background: var(--surface-2); cursor: pointer; }
     textarea.field-input{ resize: vertical; min-height: 130px; line-height: 1.7; }
+    .category-grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 8px;
+    }
+    .category-chip{
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; padding: 12px 8px;
+      border: 1.5px solid var(--line); border-radius: 14px;
+      background: #fff; cursor: pointer;
+      font-family: var(--font-kr); font-size: 12.5px; font-weight: 600; color: var(--ink-2);
+      transition: border-color .15s, background .15s, color .15s, box-shadow .15s;
+      user-select: none;
+    }
+    .category-chip:hover{ border-color: var(--accent); background: var(--surface-2); }
+    .category-chip.selected{
+      border-color: var(--accent);
+      background: color-mix(in oklab, var(--accent) 10%, white);
+      color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 14%, transparent);
+    }
+    .category-chip .cat-icon{ font-size: 20px; }
 
     .addr-row{ display: flex; gap: 10px; }
     .addr-row .field-input{ flex: 1; }
@@ -376,6 +398,21 @@
       <div class="form-section-title">기본 정보</div>
 
       <div class="field">
+        <label class="field-label">카테고리 <span class="required">*</span></label>
+        <div class="category-grid">
+          <div class="category-chip" data-value="SPORTS" onclick="selectCategory(this)"><span class="cat-icon">🏃</span>운동</div>
+          <div class="category-chip" data-value="GAME"   onclick="selectCategory(this)"><span class="cat-icon">🎮</span>게임</div>
+          <div class="category-chip" data-value="STUDY"  onclick="selectCategory(this)"><span class="cat-icon">📚</span>공부</div>
+          <div class="category-chip" data-value="FOOD"   onclick="selectCategory(this)"><span class="cat-icon">🍽️</span>맛집</div>
+          <div class="category-chip" data-value="HOBBY"  onclick="selectCategory(this)"><span class="cat-icon">🎨</span>취미</div>
+          <div class="category-chip" data-value="TRAVEL" onclick="selectCategory(this)"><span class="cat-icon">✈️</span>여행</div>
+          <div class="category-chip" data-value="PET"    onclick="selectCategory(this)"><span class="cat-icon">🐾</span>반려동물</div>
+          <div class="category-chip" data-value="IT"     onclick="selectCategory(this)"><span class="cat-icon">💻</span>IT</div>
+          <div class="category-chip" data-value="ETC"    onclick="selectCategory(this)"><span class="cat-icon">📌</span>기타</div>
+        </div>
+      </div>
+
+      <div class="field">
         <label class="field-label">모임 제목 <span class="required">*</span></label>
         <input type="text" id="meetingTitle" class="field-input" th:value="${dto.meetingTitle}">
       </div>
@@ -433,6 +470,7 @@
   const initLat        = /*[[${dto.meetingLat}]]*/ null;
   const initLng        = /*[[${dto.meetingLng}]]*/ null;
   const kakaoMapApiKey = /*[[${kakaoMapApiKey}]]*/ '';
+  const initCategory   = /*[[${dto.meetingCategory}]]*/ '';
 </script>
 <script th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoMapApiKey} + '&libraries=services'}"></script>
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
@@ -482,9 +520,24 @@
     }).open();
   }
 
+  let selectedCategory = initCategory;
+  function selectCategory(el) {
+    document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedCategory = el.dataset.value;
+  }
+  // 기존 카테고리 선택 표시
+  document.addEventListener('DOMContentLoaded', () => {
+    if (initCategory) {
+      const chip = document.querySelector(`.category-chip[data-value="${initCategory}"]`);
+      if (chip) chip.classList.add('selected');
+    }
+  });
+
   function updateMeeting() {
     const title   = document.getElementById('meetingTitle').value.trim();
     const content = document.getElementById('meetingContent').value.trim();
+    if (!selectedCategory) { showToast('카테고리를 선택해주세요.', 'error'); return; }
     if (!title || !content) { showToast('제목과 내용을 입력해주세요.', 'error'); return; }
 
     const params = new URLSearchParams({
@@ -492,7 +545,8 @@
       meetingAddress: document.getElementById('meetingAddress').value,
       meetingLat: document.getElementById('meetingLat').value || '',
       meetingLng: document.getElementById('meetingLng').value || '',
-      meetingMax: document.getElementById('meetingMax').value
+      meetingMax: document.getElementById('meetingMax').value,
+      meetingCategory: selectedCategory
     });
 
     fetch(`/api/meetings/${meetingIdx}/update`, {

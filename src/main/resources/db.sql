@@ -37,9 +37,10 @@ CREATE TABLE meeting (
     meeting_address VARCHAR(255),
     meeting_lat     DOUBLE,
     meeting_lng     DOUBLE,
-    meeting_max     INT             NOT NULL,
-    meeting_status  VARCHAR(20)     NOT NULL DEFAULT 'OPEN',
-    created_at      DATETIME        NOT NULL DEFAULT NOW(),
+    meeting_max      INT             NOT NULL,
+    meeting_status   VARCHAR(20)     NOT NULL DEFAULT 'OPEN',
+    meeting_category VARCHAR(20)     NOT NULL DEFAULT 'ETC',
+    created_at       DATETIME        NOT NULL DEFAULT NOW(),
     user_idx        BIGINT          NOT NULL,
     PRIMARY KEY (meeting_idx),
     FOREIGN KEY (user_idx) REFERENCES users(user_idx)
@@ -84,11 +85,11 @@ VALUES
     ('user@test.com',  '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '테스터',  'ROLE_USER',  '서울 마포구 망원동', 37.5558, 126.9037, NOW());
 
 -- 테스트 모임 3개
-INSERT INTO meeting (meeting_title, meeting_content, meeting_address, meeting_lat, meeting_lng, meeting_max, meeting_status, created_at, user_idx)
+INSERT INTO meeting (meeting_title, meeting_content, meeting_address, meeting_lat, meeting_lng, meeting_max, meeting_status, meeting_category, created_at, user_idx)
 VALUES
-    ('마포구 러닝 모임',     '매주 토요일 아침 한강에서 함께 달려요!',       '서울 마포구 망원한강공원', 37.5551, 126.8976, 10, 'OPEN', NOW(), 1),
-    ('합정 독서 클럽',       '한 달에 한 권, 함께 읽고 이야기 나눠요.',      '서울 마포구 합정동',       37.5498, 126.9137,  8, 'OPEN', NOW(), 1),
-    ('망원동 보드게임 모임', '보드게임 좋아하시는 분들 모여요! 초보 환영.',  '서울 마포구 망원동',       37.5558, 126.9037,  6, 'FULL', NOW(), 2);
+    ('마포구 러닝 모임',     '매주 토요일 아침 한강에서 함께 달려요!',       '서울 마포구 망원한강공원', 37.5551, 126.8976, 10, 'OPEN', 'SPORTS', NOW(), 1),
+    ('합정 독서 클럽',       '한 달에 한 권, 함께 읽고 이야기 나눠요.',      '서울 마포구 합정동',       37.5498, 126.9137,  8, 'OPEN', 'STUDY',  NOW(), 1),
+    ('망원동 보드게임 모임', '보드게임 좋아하시는 분들 모여요! 초보 환영.',  '서울 마포구 망원동',       37.5558, 126.9037,  6, 'FULL', 'GAME',   NOW(), 2);
 
 -- 테스트 참가 신청
 INSERT INTO meeting_member (meeting_idx, user_idx, is_approved, joined_at)

@@ -1,6 +1,7 @@
 package com.study.localmeet.dto.meeting;
 
 import com.study.localmeet.domain.meeting.Meeting;
+import com.study.localmeet.enumeration.MeetingCategory;
 import com.study.localmeet.enumeration.MeetingStatus;
 import lombok.Getter;
 
@@ -16,6 +17,7 @@ public class MeetingResponseDto {
     private Double meetingLat;
     private Double meetingLng;
     private Integer meetingMax;
+    private MeetingCategory meetingCategory;
     private MeetingStatus meetingStatus;
     private LocalDateTime createdAt;
 
@@ -36,6 +38,7 @@ public class MeetingResponseDto {
         this.meetingLat = entity.getMeetingLat();
         this.meetingLng = entity.getMeetingLng();
         this.meetingMax = entity.getMeetingMax();
+        this.meetingCategory = entity.getMeetingCategory();
         this.meetingStatus = entity.getMeetingStatus();
         this.createdAt = entity.getCreatedAt();
         this.userIdx = entity.getUsers() != null ? entity.getUsers().getUserIdx() : null;
