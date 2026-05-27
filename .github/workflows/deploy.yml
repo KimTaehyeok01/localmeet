@@ -97,7 +97,7 @@ jobs:
           pkill -f "java.*jar" 2>/dev/null || true
           sleep 3
 
-          nohup java -Xms128m -Xmx512m -jar *.jar > app.log 2>&1 &
+          nohup java -Xms128m -Xmx512m -Duser.timezone=Asia/Seoul -jar *.jar > app.log 2>&1 &
           echo $! > app.pid
           sleep 10
 
