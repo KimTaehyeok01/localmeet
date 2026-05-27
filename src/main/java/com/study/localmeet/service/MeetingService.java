@@ -135,7 +135,7 @@ public class MeetingService {
 
         return meetingMemberRepository
                 .findByMeeting_MeetingIdxAndUsers_UserIdx(meetingIdx, users.getUserIdx())
-                .map(mm -> mm.isApproved() ? "APPROVED" : "PENDING")
+                .map(mm -> Boolean.TRUE.equals(mm.getIsApproved()) ? "APPROVED" : "PENDING")
                 .orElse("NONE");
     }
 
