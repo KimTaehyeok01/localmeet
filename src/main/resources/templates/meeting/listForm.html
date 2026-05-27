@@ -1064,32 +1064,38 @@
   }
 
   // 날씨 추천 배너
+  function loadWeather(lat, lng) {
+    fetch(`/api/weather/recommend?lat=${lat}&lng=${lng}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) return;
+        document.getElementById('weatherEmoji').textContent = data.emoji;
+        document.getElementById('weatherDesc').textContent  = `${data.desc}${data.city ? ' · ' + data.city : ''}`;
+        document.getElementById('weatherTemp').textContent  = `${data.temp}°C`;
+        const catsEl = document.getElementById('weatherCats');
+        catsEl.innerHTML = '';
+        (data.categories || []).forEach((cat, i) => {
+          const btn = document.createElement('button');
+          btn.className   = 'weather-cat-btn';
+          btn.textContent = data.categoryLabels[i] || cat;
+          btn.onclick = () => {
+            const tab = document.querySelector(`.cat-tab[data-cat="${cat}"]`);
+            if (tab) filterByCategory(tab);
+          };
+          catsEl.appendChild(btn);
+        });
+        document.getElementById('weatherBanner').style.display = 'flex';
+      })
+      .catch(() => {});
+  }
+
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      const { latitude: lat, longitude: lng } = pos.coords;
-      fetch(`/api/weather/recommend?lat=${lat}&lng=${lng}`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.error) return;
-          document.getElementById('weatherEmoji').textContent = data.emoji;
-          document.getElementById('weatherDesc').textContent  = `${data.desc}${data.city ? ' · ' + data.city : ''}`;
-          document.getElementById('weatherTemp').textContent  = `${data.temp}°C`;
-          const catsEl = document.getElementById('weatherCats');
-          catsEl.innerHTML = '';
-          (data.categories || []).forEach((cat, i) => {
-            const btn = document.createElement('button');
-            btn.className   = 'weather-cat-btn';
-            btn.textContent = data.categoryLabels[i] || cat;
-            btn.onclick = () => {
-              const tab = document.querySelector(`.cat-tab[data-cat="${cat}"]`);
-              if (tab) filterByCategory(tab);
-            };
-            catsEl.appendChild(btn);
-          });
-          document.getElementById('weatherBanner').style.display = 'flex';
-        })
-        .catch(() => {});
-    }, () => {});
+    navigator.geolocation.getCurrentPosition(
+      pos => loadWeather(pos.coords.latitude, pos.coords.longitude),
+      ()  => loadWeather(37.5665, 126.9780)  // 위치 거부 시 서울 기본값
+    );
+  } else {
+    loadWeather(37.5665, 126.9780);  // geolocation 미지원 시 서울 기본값
   }
 
   function showToast(msg, type = '') {
