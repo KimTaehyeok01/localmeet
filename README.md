@@ -135,6 +135,8 @@ http://13.209.110.13
 모임 상태 흐름
 OPEN(모집중) ──→ FULL(모집완료, 승인 인원 도달 시 자동 전환)
             └──→ CLOSED(종료, 관리자 수동 변경)
+
+FULL ──→ OPEN (참가자 취소 시 자동 복구)
 ```
 
 ---
@@ -213,7 +215,7 @@ src/main/java/com/study/localmeet/
 │
 ├── controller/                       # 컨트롤러
 │   ├── AuthController.java           # 회원가입 / 로그인 / 마이페이지
-│   ├── MeetingController.java        # 모임 CRUD / 참가 신청·승인
+│   ├── MeetingController.java        # 모임 CRUD / 참가 신청·승인·취소 / 참가자 목록
 │   ├── ChatController.java           # WebSocket 채팅 메시지 수신·브로드캐스트
 │   ├── NotificationController.java   # SSE 알림 구독
 │   ├── AdminController.java          # 관리자 (회원·모임 관리)
@@ -236,6 +238,9 @@ src/main/java/com/study/localmeet/
 ├── dto/                              # DTO
 │   ├── auth/
 │   ├── meeting/
+│   │   ├── MeetingResponseDto.java
+│   │   ├── MeetingSaveRequestDto.java
+│   │   └── MeetingMemberDto.java      # 참가자 목록 응답 DTO
 │   └── chat/
 │
 ├── client/
@@ -349,7 +354,8 @@ erDiagram
 서버에서 클라이언트로 단방향 데이터를 전송하는 SSE를 활용해, 참가 신청 이벤트 발생 시 모임장에게 실시간 알림을 전송합니다. `ConcurrentHashMap`으로 활성 연결을 관리하고, 연결 종료·타임아웃 시 자동으로 정리합니다.
 
 **모임 상태 자동 전환**  
-참가 승인 시 승인 인원이 최대 인원에 도달하면 모임 상태가 `OPEN → FULL`로 자동 변경되어 추가 신청을 막습니다.
+참가 승인 시 승인 인원이 최대 인원에 도달하면 모임 상태가 `OPEN → FULL`로 자동 변경되어 추가 신청을 막습니다.  
+반대로 참가자가 신청을 취소하면 `FULL → OPEN`으로 자동 복구되어 다른 참가자가 신청할 수 있습니다.
 
 **FastAPI 연동 (MSA 구조)**  
 Spring Boot(8080)와 별도로 Python FastAPI 서버(8000)를 운영합니다.  
@@ -476,7 +482,8 @@ JAR 파일 + fastapi/ 폴더 전송
 | Back-End / Front-End |
 | 전체 설계 및 구현 |
 | JWT 인증 / OAuth2 소셜 로그인 |
-| 모임 CRUD / 참가 신청·승인 |
+| 모임 CRUD / 참가 신청·승인·취소 |
+| 참가자 목록 조회 |
 | 모임 카테고리 분류 및 필터링 |
 | WebSocket 실시간 채팅 |
 | SSE 실시간 알림 |
