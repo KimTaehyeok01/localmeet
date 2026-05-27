@@ -527,7 +527,7 @@
     .then(async r => {
       if (!r.ok) {
         const err = await r.json().catch(() => ({}));
-        throw new Error(err.message || '채팅 전송 실패');
+        throw new Error(err.message || '전송 실패');
       }
       return r.json();
     })
