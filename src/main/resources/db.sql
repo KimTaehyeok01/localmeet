@@ -23,6 +23,7 @@ CREATE TABLE users (
     user_address  VARCHAR(255),
     user_lat      DOUBLE,
     user_lng      DOUBLE,
+    profile_img   VARCHAR(255),
     created_at    DATETIME        NOT NULL DEFAULT NOW(),
     PRIMARY KEY (user_idx)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -75,7 +76,7 @@ CREATE TABLE chat_message (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ================================
--- 5. 친구 관계 테이블
+-- 5. 친구 관계 테이블 (PENDING / ACCEPTED)
 -- ================================
 CREATE TABLE friendship (
     friend_idx    BIGINT      NOT NULL AUTO_INCREMENT,
@@ -90,7 +91,7 @@ CREATE TABLE friendship (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ================================
--- 6. 대화방 테이블
+-- 6. 1:1 대화방 테이블
 -- ================================
 CREATE TABLE conversation (
     conv_idx   BIGINT   NOT NULL AUTO_INCREMENT,
@@ -99,7 +100,7 @@ CREATE TABLE conversation (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ================================
--- 6. 대화방 참여자 테이블
+-- 7. 대화방 참여자 테이블
 -- ================================
 CREATE TABLE conversation_member (
     cm_idx       BIGINT   NOT NULL AUTO_INCREMENT,
@@ -112,7 +113,7 @@ CREATE TABLE conversation_member (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ================================
--- 7. DM 메시지 테이블
+-- 8. DM 메시지 테이블
 -- ================================
 CREATE TABLE direct_message (
     dm_idx     BIGINT   NOT NULL AUTO_INCREMENT,

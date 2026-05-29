@@ -32,8 +32,12 @@ http://13.209.110.13
 - 운동·게임·공부·맛집 등 **9가지 카테고리**로 모임을 분류하고 필터링할 수 있다.
 - **오늘 날씨에 맞는 모임 카테고리를 자동으로 추천**해준다. (OpenWeatherMap API + FastAPI)
 - 모임별 실시간 채팅 시 **욕설을 자동 감지·차단**한다. (FastAPI 욕설 필터)
+- 채팅이 **카카오톡 스타일**로 표시된다. (내 메시지 오른쪽, 상대 메시지 왼쪽)
 - 참가 신청 후 사정이 생기면 **참가 신청을 직접 취소**할 수 있다.
 - 모임 상세 페이지에서 **참가자 목록(대기중/확정)**을 한눈에 확인할 수 있다.
+- 채팅창에서 상대방 닉네임 클릭 시 **친구 추가** 요청을 보낼 수 있다.
+- **1:1 다이렉트 메시지(DM)** 기능으로 친구와 실시간 채팅할 수 있다.
+- 마이페이지에서 **프로필 사진**을 업로드하거나 기본 이미지로 초기화할 수 있다.
 - 모임장은 참가 신청을 승인/거절하고, 모임 상태를 관리할 수 있다.
 - 카카오, 네이버 소셜 로그인을 지원한다.
 
@@ -111,6 +115,20 @@ http://13.209.110.13
 - 입장 시 기존 채팅 내역이 오래된 순으로 자동 로드됩니다.
 - STOMP 헤더의 JWT 토큰으로 인증이 처리되어, 인증된 사용자만 메시지를 전송할 수 있습니다.
 - 메시지 전송 전 **FastAPI 욕설 감지 API**를 호출하여 부적절한 언어가 포함된 메시지를 차단합니다.
+- **카카오톡 스타일**로 내 메시지는 오른쪽, 상대 메시지는 왼쪽에 표시됩니다.
+- 상대방 닉네임 클릭 시 팝업이 나타나 **친구 추가** 또는 **1:1 메시지**를 바로 시작할 수 있습니다.
+
+#### 5단계 — 1:1 다이렉트 메시지 (DM)
+- 네비바의 💬 메시지 버튼으로 전용 메신저 페이지(`/view/messages`)에 접근할 수 있습니다.
+- 닉네임 검색으로 **새 DM 대화를 시작**할 수 있습니다.
+- 대화방 목록, 채팅창, 친구 목록이 3-컬럼 레이아웃으로 구성됩니다.
+- WebSocket(STOMP)으로 **실시간 메시지 수신**이 이루어지며, 미읽은 메시지 수가 뱃지로 표시됩니다.
+- 읽음 처리가 자동으로 이루어져 대화방 입장 시 뱃지가 초기화됩니다.
+
+#### 6단계 — 마이페이지 프로필 관리
+- 마이페이지의 아바타 이미지를 클릭하면 **프로필 사진을 업로드**할 수 있습니다. (5MB 이하 이미지)
+- 이미 사진이 있는 경우 **기본 이모지로 초기화**하는 옵션도 제공됩니다.
+- 업로드된 프로필 사진은 채팅 아바타에도 동일하게 반영됩니다.
 
 ---
 
@@ -215,16 +233,18 @@ src/main/java/com/study/localmeet/
 │   └── QueryDslConfig.java           # QueryDSL JPAQueryFactory 빈 등록
 │
 ├── controller/                       # 컨트롤러
-│   ├── AuthController.java           # 회원가입 / 로그인 / 마이페이지
+│   ├── AuthController.java           # 회원가입 / 로그인 / 마이페이지 / 프로필 사진
 │   ├── MeetingController.java        # 모임 CRUD / 참가 신청·승인·취소 / 참가자 목록
 │   ├── ChatController.java           # WebSocket 채팅 메시지 수신·브로드캐스트
+│   ├── MessengerController.java      # DM 대화방 / 메시지 / WebSocket DM
+│   ├── FriendController.java         # 친구 요청·수락·목록 조회
 │   ├── NotificationController.java   # SSE 알림 구독
 │   ├── AdminController.java          # 관리자 (회원·모임 관리)
 │   └── ViewController.java           # 뷰 라우팅
 │
 ├── domain/                           # 엔티티 & 레포지토리
 │   ├── user/
-│   │   ├── Users.java
+│   │   ├── Users.java                # profile_img 컬럼 포함
 │   │   └── UsersRepository.java
 │   ├── meeting/
 │   │   ├── Meeting.java
@@ -232,9 +252,19 @@ src/main/java/com/study/localmeet/
 │   ├── meetingmember/
 │   │   ├── MeetingMember.java
 │   │   └── MeetingMemberRepository.java
-│   └── chat/
-│       ├── ChatMessage.java
-│       └── ChatMessageRepository.java
+│   ├── chat/
+│   │   ├── ChatMessage.java
+│   │   └── ChatMessageRepository.java
+│   ├── dm/                           # 1:1 메신저
+│   │   ├── Conversation.java
+│   │   ├── ConversationMember.java
+│   │   ├── DirectMessage.java
+│   │   ├── ConversationRepository.java
+│   │   ├── ConversationMemberRepository.java
+│   │   └── DirectMessageRepository.java
+│   └── friend/                       # 친구 관계
+│       ├── Friendship.java
+│       └── FriendshipRepository.java
 │
 ├── dto/                              # DTO
 │   ├── auth/
@@ -242,7 +272,10 @@ src/main/java/com/study/localmeet/
 │   │   ├── MeetingResponseDto.java
 │   │   ├── MeetingSaveRequestDto.java
 │   │   └── MeetingMemberDto.java      # 참가자 목록 응답 DTO
-│   └── chat/
+│   ├── chat/
+│   └── dm/
+│       ├── ConversationDto.java       # 대화 목록 응답 DTO
+│       └── DirectMessageDto.java      # DM 메시지 응답 DTO
 │
 ├── client/
 │   └── FastApiClient.java            # FastAPI 호출 클라이언트 (욕설감지 / 날씨추천)
@@ -253,19 +286,23 @@ src/main/java/com/study/localmeet/
 │   └── MeetingCategory.java          # SPORTS, GAME, STUDY, FOOD, HOBBY, TRAVEL, PET, IT, ETC
 │
 └── service/                          # 서비스 (비즈니스 로직)
-    ├── AuthService.java
+    ├── AuthService.java              # 프로필 사진 업로드·초기화 포함
     ├── MeetingService.java
     ├── ChatService.java
+    ├── MessengerService.java         # DM 대화방 / 메시지 / 유저 검색
+    ├── FriendService.java            # 친구 요청·수락·목록 조회
     ├── NotificationService.java
     ├── AdminService.java
     └── CustomOAuth2UserService.java
 
 src/main/resources/
 ├── templates/
-│   ├── auth/                         # 로그인 / 회원가입 / 마이페이지
-│   ├── meeting/                      # 모임 목록 / 상세 / 등록 / 수정
+│   ├── auth/                         # 로그인 / 회원가입 / 마이페이지 (프로필 사진)
+│   ├── meeting/                      # 모임 목록 / 상세 (카카오톡 채팅) / 등록 / 수정
+│   ├── messenger/                    # 1:1 메신저 페이지
 │   └── admin/                        # 관리자 페이지
 ├── static/css/style.css
+├── uploads/                          # 프로필 사진 업로드 저장소
 ├── application.properties
 └── db.sql
 
@@ -297,6 +334,7 @@ erDiagram
         VARCHAR user_address
         DOUBLE user_lat
         DOUBLE user_lng
+        VARCHAR profile_img
         DATETIME created_at
     }
 
@@ -330,11 +368,44 @@ erDiagram
         DATETIME created_at
     }
 
+    FRIENDSHIP {
+        BIGINT friend_idx PK
+        BIGINT requester_idx FK
+        BIGINT receiver_idx FK
+        VARCHAR status
+        DATETIME created_at
+    }
+
+    CONVERSATION {
+        BIGINT conv_idx PK
+        DATETIME created_at
+    }
+
+    CONVERSATION_MEMBER {
+        BIGINT cm_idx PK
+        BIGINT conv_idx FK
+        BIGINT user_idx FK
+        DATETIME last_read_at
+    }
+
+    DIRECT_MESSAGE {
+        BIGINT dm_idx PK
+        BIGINT conv_idx FK
+        BIGINT sender_idx FK
+        TEXT dm_content
+        DATETIME created_at
+    }
+
     USERS ||--o{ MEETING : "작성"
     USERS ||--o{ MEETING_MEMBER : "참가 신청"
     USERS ||--o{ CHAT_MESSAGE : "전송"
+    USERS ||--o{ FRIENDSHIP : "친구 요청"
+    USERS ||--o{ CONVERSATION_MEMBER : "대화 참여"
+    USERS ||--o{ DIRECT_MESSAGE : "DM 전송"
     MEETING ||--o{ MEETING_MEMBER : "포함"
     MEETING ||--o{ CHAT_MESSAGE : "포함"
+    CONVERSATION ||--o{ CONVERSATION_MEMBER : "포함"
+    CONVERSATION ||--o{ DIRECT_MESSAGE : "포함"
 ```
 
 ---
@@ -367,6 +438,16 @@ FastAPI가 다운되어도 Spring Boot는 정상 동작하도록 `fail-open` 방
 브라우저 Geolocation API로 사용자 위치를 가져와 OpenWeatherMap API에 요청합니다.  
 날씨 코드에 따라 맑음 → 운동·여행·반려동물, 비 → 게임·공부·IT 등 카테고리를 추천합니다.  
 HTTP(비HTTPS) 환경에서 Geolocation이 차단되는 경우 서울 기본 좌표로 폴백 처리했습니다.
+
+**1:1 다이렉트 메시지 (DM)**  
+`conversation` / `conversation_member` / `direct_message` 3개 테이블로 대화방을 설계했습니다.  
+기존 모임 채팅과 동일한 WebSocket(STOMP) 인프라를 재사용하여 `/topic/dm/{convIdx}` 토픽으로 실시간 메시지를 전달합니다.  
+`last_read_at` 컬럼으로 미읽은 메시지 수를 계산하고, 대화방 입장 시 자동으로 읽음 처리합니다.
+
+**친구 관계 및 프로필 사진**  
+`friendship` 테이블의 `PENDING / ACCEPTED` 상태로 친구 요청 흐름을 관리합니다.  
+프로필 사진은 서버 파일시스템(`uploads/profiles/`)에 저장하고, `WebMvcConfigurer`로 `/uploads/**` 경로를 정적 리소스로 서빙합니다.  
+업로드된 사진은 모임 채팅 아바타에도 실시간으로 반영됩니다.
 
 ---
 
@@ -486,7 +567,10 @@ JAR 파일 + fastapi/ 폴더 전송
 | 모임 CRUD / 참가 신청·승인·취소 |
 | 참가자 목록 조회 |
 | 모임 카테고리 분류 및 필터링 |
-| WebSocket 실시간 채팅 |
+| WebSocket 실시간 채팅 (카카오톡 스타일) |
+| 1:1 다이렉트 메시지 (DM) |
+| 친구 추가 / 수락 / 목록 조회 |
+| 프로필 사진 업로드 및 초기화 |
 | SSE 실시간 알림 |
 | FastAPI 욕설 감지 / 날씨 기반 모임 추천 |
 | 카카오맵 API 연동 |
