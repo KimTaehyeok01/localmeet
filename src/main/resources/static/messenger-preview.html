@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LocalMeet — 메신저 디자인 프리뷰</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <style>
+    :root {
+      --bg: #F4FAFE;
+      --surface: #FFFFFF;
+      --surface-2: #EBF4FB;
+      --surface-3: #DCEBF7;
+      --ink: #0B2036;
+      --ink-2: #264766;
+      --muted: #6B8AA8;
+      --muted-2: #A6BED4;
+      --line: #D7E6F2;
+      --accent: #1FA6D6;
+      --accent-2: #7DD4C0;
+      --accent-3: #B8A6FF;
+      --accent-4: #FFD447;
+      --ok: #2CCB86;
+      --warn: #FF8A4C;
+      --radius: 16px;
+      --radius-lg: 22px;
+      --radius-xl: 32px;
+      --shadow-1: 0 1px 2px rgba(11,32,54,.05);
+      --shadow-2: 0 4px 16px -6px rgba(31,166,214,.18), 0 1px 3px rgba(11,32,54,.05);
+      --shadow-3: 0 20px 48px -16px rgba(31,166,214,.28), 0 2px 6px rgba(11,32,54,.06);
+      --font-kr: 'Pretendard', sans-serif;
+      --font-en: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-kr);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+    body::before {
+      content:'';
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(60vw 55vh at 85% -10%, rgba(125,212,192,.35), transparent 60%),
+        radial-gradient(55vw 60vh at -5% 10%, rgba(184,166,255,.32), transparent 60%),
+        radial-gradient(50vw 55vh at 50% 110%, rgba(31,166,214,.18), transparent 60%);
+    }
+    body > * { position: relative; z-index: 1; }
+
+    /* ── NAVBAR ── */
+    .navbar {
+      position: sticky; top: 14px; z-index: 30;
+      max-width: 1240px;
+      margin: 14px auto 0;
+      background: color-mix(in oklab, var(--surface) 82%, transparent);
+      backdrop-filter: saturate(1.3) blur(18px);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px 10px 22px;
+      box-shadow: var(--shadow-1);
+    }
+    .navbar-brand {
+      font-weight: 700; font-size: 18px;
+      color: var(--ink); text-decoration: none;
+      letter-spacing: -0.02em;
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .navbar-brand::before {
+      content:''; width: 26px; height: 26px; border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255,255,255,.85), transparent 50%),
+        conic-gradient(from 200deg, var(--accent), var(--accent-2) 45%, var(--accent-3) 72%, var(--accent-4) 100%);
+      box-shadow: 0 2px 8px -2px rgba(31,166,214,.4);
+    }
+    .navbar-brand span {
+      background: linear-gradient(90deg, var(--accent), var(--accent-3));
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .navbar-menu { display: flex; align-items: center; gap: 4px; }
+    .navbar-menu a {
+      padding: 8px 14px; font-size: 14px; color: var(--ink-2);
+      text-decoration: none; border-radius: 999px;
+      transition: background .15s, color .15s; font-weight: 500;
+    }
+    .navbar-menu a:hover { color: var(--accent); background: var(--surface-2); }
+
+    /* 메시지 아이콘 버튼 (네비바 추가 요소) */
+    .nav-msg-btn {
+      position: relative;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: 1.5px solid var(--line);
+      background: var(--surface);
+      display: grid; place-items: center;
+      cursor: pointer;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+      box-shadow: var(--shadow-1);
+    }
+    .nav-msg-btn:hover { border-color: var(--accent); background: var(--surface-2); }
+    .nav-msg-btn svg { width: 18px; height: 18px; stroke: var(--muted); transition: stroke .15s; }
+    .nav-msg-btn:hover svg { stroke: var(--accent); }
+    .nav-msg-badge {
+      position: absolute; top: -4px; right: -4px;
+      width: 18px; height: 18px;
+      background: linear-gradient(135deg, var(--accent), #0E8AB8);
+      color: #fff; font-size: 10px; font-weight: 700;
+      border-radius: 50%; display: grid; place-items: center;
+      border: 2px solid var(--bg);
+      font-family: var(--font-en);
+    }
+
+    /* ── LABEL 배너 ── */
+    .option-label {
+      max-width: 1240px; margin: 36px auto 0;
+      padding: 0 24px;
+      display: flex; gap: 12px; align-items: center;
+    }
+    .option-tag {
+      font-family: var(--font-mono); font-size: 10.5px;
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--muted); background: var(--surface);
+      border: 1px solid var(--line); border-radius: 999px;
+      padding: 5px 12px;
+    }
+    .option-tag.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── LAYOUT ── */
+    .page-body {
+      max-width: 1240px;
+      margin: 20px auto 0;
+      padding: 0 24px 60px;
+      height: calc(100vh - 120px);
+      min-height: 600px;
+    }
+
+    /* ══════════════════════════════════
+       OPTION A — 별도 페이지 /view/messages
+       ══════════════════════════════════ */
+    .msg-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 16px;
+      height: 100%;
+      background: transparent;
+    }
+
+    /* 왼쪽: 대화 목록 패널 */
+    .msg-sidebar {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-2);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .msg-sidebar::before {
+      content:'';
+      position: absolute; top: -1px; left: 20px; right: 20px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-2), var(--accent), var(--accent-3));
+      border-radius: 0 0 3px 3px;
+    }
+    .msg-sidebar-header {
+      padding: 20px 20px 14px;
+      border-bottom: 1px solid var(--line);
+      flex-shrink: 0;
+    }
+    .msg-sidebar-title {
+      font-size: 16px; font-weight: 800; color: var(--ink);
+      letter-spacing: -0.02em;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .msg-new-btn {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #0E8AB8);
+      border: none; cursor: pointer;
+      display: grid; place-items: center;
+      box-shadow: 0 4px 10px -4px rgba(31,166,214,.5);
+      transition: transform .15s, filter .15s;
+    }
+    .msg-new-btn:hover { filter: brightness(1.1); transform: scale(1.05); }
+    .msg-new-btn svg { width: 14px; height: 14px; stroke: #fff; }
+
+    .msg-search {
+      margin-top: 12px;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface-2);
+      border: 1.5px solid transparent;
+      border-radius: 12px;
+      padding: 8px 12px;
+      transition: border-color .2s;
+    }
+    .msg-search:focus-within { border-color: var(--accent); }
+    .msg-search svg { width: 15px; height: 15px; stroke: var(--muted); flex-shrink: 0; }
+    .msg-search input {
+      flex: 1; border: none; outline: none; background: transparent;
+      font-size: 13px; font-family: var(--font-kr); color: var(--ink);
+    }
+    .msg-search input::placeholder { color: var(--muted-2); }
+
+    /* 탭: DM / 그룹 */
+    .msg-tabs {
+      display: flex; gap: 0;
+      padding: 12px 14px 0;
+      border-bottom: 1px solid var(--line);
+      flex-shrink: 0;
+    }
+    .msg-tab {
+      flex: 1; text-align: center;
+      padding: 8px 0 10px;
+      font-size: 12.5px; font-weight: 700; color: var(--muted);
+      cursor: pointer; border-bottom: 2px solid transparent;
+      transition: color .15s, border-color .15s;
+    }
+    .msg-tab.active { color: var(--accent); border-color: var(--accent); }
+
+    /* 대화 목록 아이템 */
+    .conv-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+    .conv-list::-webkit-scrollbar { width: 4px; }
+    .conv-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+    .conv-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background .15s;
+      position: relative;
+    }
+    .conv-item:hover { background: var(--surface-2); }
+    .conv-item.active { background: color-mix(in oklab, var(--accent) 8%, white); }
+    .conv-item.active::before {
+      content:'';
+      position: absolute; left: 0; top: 8px; bottom: 8px;
+      width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
+    }
+
+    .conv-avatar {
+      width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center;
+      font-weight: 700; font-size: 15px; color: #fff;
+      position: relative;
+    }
+    .conv-avatar.a { background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+    .conv-avatar.b { background: linear-gradient(135deg, var(--accent-3), #9B7DFF); }
+    .conv-avatar.c { background: linear-gradient(135deg, var(--accent-4), #FFB800); color: var(--ink); }
+    .conv-avatar.d { background: linear-gradient(135deg, var(--ok), #1A9E65); }
+    .conv-avatar.group {
+      background: linear-gradient(135deg, var(--surface-3), var(--surface-2));
+      color: var(--muted);
+      border: 1.5px solid var(--line);
+      font-size: 18px;
+    }
+    .conv-online {
+      position: absolute; bottom: 0; right: 0;
+      width: 11px; height: 11px; border-radius: 50%;
+      background: var(--ok); border: 2px solid #fff;
+    }
+
+    .conv-info { flex: 1; min-width: 0; }
+    .conv-name {
+      font-size: 13.5px; font-weight: 700; color: var(--ink);
+      letter-spacing: -0.01em; display: flex; justify-content: space-between;
+    }
+    .conv-time { font-size: 11px; color: var(--muted-2); font-family: var(--font-mono); }
+    .conv-preview {
+      font-size: 12px; color: var(--muted); margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .conv-unread {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #0E8AB8);
+      color: #fff; font-size: 10.5px; font-weight: 700;
+      display: grid; place-items: center; flex-shrink: 0;
+      font-family: var(--font-en);
+    }
+
+    /* 오른쪽: 채팅 패널 */
+    .msg-chat {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-2);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .chat-header-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-3), #9B7DFF);
+      display: grid; place-items: center;
+      font-weight: 700; font-size: 15px; color: #fff;
+      flex-shrink: 0; position: relative;
+    }
+    .chat-header-avatar .online {
+      position: absolute; bottom: 0; right: 0;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--ok); border: 2px solid #fff;
+    }
+    .chat-header-info { flex: 1; }
+    .chat-header-name {
+      font-size: 15px; font-weight: 800; color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+    .chat-header-status {
+      font-size: 12px; color: var(--ok); font-weight: 600; margin-top: 1px;
+    }
+    .chat-header-actions { display: flex; gap: 8px; }
+    .chat-action-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px solid var(--line); background: var(--surface);
+      display: grid; place-items: center; cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+    .chat-action-btn:hover { border-color: var(--accent); background: var(--surface-2); }
+    .chat-action-btn svg { width: 16px; height: 16px; stroke: var(--muted); }
+
+    .chat-messages {
+      flex: 1; overflow-y: auto;
+      padding: 24px 24px 16px;
+      display: flex; flex-direction: column; gap: 20px;
+      background: var(--surface-2);
+    }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+    .date-divider {
+      text-align: center;
+      font-size: 11px; font-family: var(--font-mono);
+      color: var(--muted-2); letter-spacing: .08em;
+      position: relative;
+    }
+    .date-divider::before, .date-divider::after {
+      content:''; position: absolute; top: 50%;
+      width: calc(50% - 48px); height: 1px; background: var(--line);
+    }
+    .date-divider::before { left: 0; }
+    .date-divider::after { right: 0; }
+
+    /* 메시지 버블 */
+    .msg-row { display: flex; gap: 10px; align-items: flex-end; }
+    .msg-row.mine { flex-direction: row-reverse; }
+    .msg-row-avatar {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center;
+      font-size: 12px; font-weight: 700; color: #fff;
+    }
+    .msg-row-avatar.a { background: linear-gradient(135deg, var(--accent-3), #9B7DFF); }
+    .msg-row-avatar.b { background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+    .msg-bubbles { display: flex; flex-direction: column; gap: 4px; max-width: 62%; }
+    .msg-row.mine .msg-bubbles { align-items: flex-end; }
+    .msg-sender {
+      font-size: 11.5px; font-weight: 700; color: var(--muted);
+      margin-bottom: 2px; padding: 0 4px;
+    }
+    .msg-bubble {
+      padding: 11px 15px;
+      border-radius: 18px;
+      font-size: 14px; line-height: 1.55;
+      word-break: break-word;
+    }
+    .msg-bubble.other {
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      border-radius: 4px 18px 18px 18px;
+      box-shadow: var(--shadow-1);
+    }
+    .msg-bubble.mine {
+      background: linear-gradient(135deg, var(--accent), #0E8AB8);
+      color: #fff;
+      border-radius: 18px 18px 4px 18px;
+      box-shadow: 0 6px 16px -6px rgba(31,166,214,.5);
+    }
+    .msg-time {
+      font-size: 10.5px; color: var(--muted-2); padding: 0 4px;
+      font-family: var(--font-mono);
+    }
+    .msg-row.mine .msg-time { text-align: right; }
+
+    /* 채팅 입력 */
+    .chat-input-area {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--line);
+      background: #fff;
+      flex-shrink: 0;
+    }
+    .chat-attach-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px solid var(--line); background: var(--surface);
+      display: grid; place-items: center; cursor: pointer; flex-shrink: 0;
+      transition: border-color .15s;
+    }
+    .chat-attach-btn:hover { border-color: var(--accent); }
+    .chat-attach-btn svg { width: 16px; height: 16px; stroke: var(--muted); }
+    .chat-input-wrap {
+      flex: 1;
+      display: flex; align-items: center;
+      background: var(--surface-2);
+      border: 1.5px solid transparent;
+      border-radius: 14px;
+      padding: 10px 14px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .chat-input-wrap:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 12%, transparent);
+    }
+    .chat-input-wrap input {
+      flex: 1; border: none; outline: none; background: transparent;
+      font-size: 14px; font-family: var(--font-kr); color: var(--ink);
+    }
+    .chat-input-wrap input::placeholder { color: var(--muted-2); }
+    .chat-send-btn {
+      background: linear-gradient(135deg, var(--accent), #0E8AB8);
+      color: #fff; border: none;
+      width: 42px; height: 42px; border-radius: 50%;
+      display: grid; place-items: center;
+      cursor: pointer; flex-shrink: 0;
+      box-shadow: 0 4px 14px -4px rgba(31,166,214,.6);
+      transition: transform .15s, filter .15s;
+    }
+    .chat-send-btn:hover { filter: brightness(1.1); transform: scale(1.05); }
+    .chat-send-btn svg { width: 18px; height: 18px; stroke: #fff; fill: none; }
+
+    /* ══════════════════════════════════
+       OPTION B — 플로팅 드로어 (미니 프리뷰)
+       ══════════════════════════════════ */
+    .option-b-wrap {
+      display: none;
+      position: relative; height: 500px;
+      border: 2px dashed var(--line); border-radius: var(--radius-xl);
+      background: var(--surface-2); overflow: hidden;
+    }
+    .option-b-bg {
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><circle cx='20' cy='20' r='1' fill='%23D7E6F2'/></svg>") repeat;
+      opacity: .6;
+    }
+    .option-b-label {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    /* 플로팅 메신저 버튼 (Option B FAB) */
+    .msg-fab {
+      position: absolute; bottom: 28px; right: 28px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      border: none; cursor: pointer;
+      box-shadow: 0 8px 24px -6px rgba(31,166,214,.6);
+      display: grid; place-items: center;
+      transition: transform .22s, box-shadow .22s;
+    }
+    .msg-fab:hover { transform: scale(1.08); }
+    .msg-fab svg { width: 22px; height: 22px; stroke: #fff; }
+    .msg-fab-badge {
+      position: absolute; top: -4px; right: -4px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--warn); color: #fff;
+      font-size: 10px; font-weight: 700;
+      display: grid; place-items: center;
+      border: 2px solid var(--bg);
+      font-family: var(--font-en);
+    }
+
+    .drawer {
+      position: absolute; top: 0; right: 0; bottom: 0;
+      width: 340px;
+      background: var(--surface);
+      border-left: 1px solid var(--line);
+      box-shadow: -8px 0 32px -8px rgba(11,32,54,.12);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .drawer-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(135deg,
+        color-mix(in oklab, var(--accent) 8%, var(--surface)),
+        var(--surface));
+    }
+    .drawer-title {
+      font-size: 15px; font-weight: 800; color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+    .drawer-close {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid var(--line); background: var(--surface);
+      display: grid; place-items: center; cursor: pointer;
+    }
+    .drawer-close svg { width: 14px; height: 14px; stroke: var(--muted); }
+    .drawer-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+
+    /* ── 탭 전환 버튼 ── */
+    .tab-switcher {
+      display: flex; gap: 10px;
+      max-width: 1240px; margin: 28px auto 0; padding: 0 24px;
+    }
+    .tab-btn {
+      padding: 9px 20px;
+      border-radius: 999px;
+      border: 1.5px solid var(--line);
+      background: var(--surface);
+      font-size: 13px; font-weight: 700;
+      color: var(--muted); cursor: pointer;
+      transition: all .15s; font-family: var(--font-kr);
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--accent), #0E8AB8);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 14px -4px rgba(31,166,214,.5);
+    }
+
+    /* 추천 배지 */
+    .recommend-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px;
+      background: color-mix(in oklab, var(--ok) 12%, white);
+      color: color-mix(in oklab, var(--ok) 80%, var(--ink));
+      border: 1px solid color-mix(in oklab, var(--ok) 28%, transparent);
+      border-radius: 999px; font-size: 11px; font-weight: 700;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR (메신저 아이콘 포함) -->
+<nav class="navbar">
+  <a class="navbar-brand" href="#">Local<span>Meet</span></a>
+  <div class="navbar-menu">
+    <a href="#">모임 탐색</a>
+    <a href="#" class="active" style="color:var(--accent); background:var(--surface-2);">메시지</a>
+    <a href="#">마이페이지</a>
+    <!-- 💬 네비바 메신저 아이콘 -->
+    <div class="nav-msg-btn" title="메시지">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <div class="nav-msg-badge">3</div>
+    </div>
+  </div>
+</nav>
+
+<!-- 탭 전환 -->
+<div class="tab-switcher">
+  <button class="tab-btn active" onclick="showOption('a', this)">
+    💬 Option A — 별도 페이지 <span class="recommend-tag">✓ 추천</span>
+  </button>
+  <button class="tab-btn" onclick="showOption('b', this)">
+    📌 Option B — 플로팅 드로어
+  </button>
+</div>
+
+<!-- ══ OPTION A ══ -->
+<div class="page-body" id="optionA">
+  <div class="msg-layout">
+
+    <!-- 왼쪽: 대화 목록 -->
+    <div class="msg-sidebar">
+      <div class="msg-sidebar-header">
+        <div class="msg-sidebar-title">
+          메시지
+          <button class="msg-new-btn" title="새 대화">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="msg-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="text" placeholder="대화 검색">
+        </div>
+      </div>
+
+      <div class="msg-tabs">
+        <div class="msg-tab active">💬 DM</div>
+        <div class="msg-tab">👥 그룹</div>
+      </div>
+
+      <div class="conv-list">
+        <!-- 활성 대화 -->
+        <div class="conv-item active">
+          <div class="conv-avatar b">지<div class="conv-online"></div></div>
+          <div class="conv-info">
+            <div class="conv-name">지현님 <span class="conv-time">2분 전</span></div>
+            <div class="conv-preview">토요일 같이 가도 될까요? 😊</div>
+          </div>
+          <div class="conv-unread">2</div>
+        </div>
+        <div class="conv-item">
+          <div class="conv-avatar a">민</div>
+          <div class="conv-info">
+            <div class="conv-name">민준님 <span class="conv-time">어제</span></div>
+            <div class="conv-preview">확인했어요! 내일 봬요~</div>
+          </div>
+        </div>
+        <div class="conv-item">
+          <div class="conv-avatar group">🏃</div>
+          <div class="conv-info">
+            <div class="conv-name">마포 러닝 크루 <span class="conv-time">월요일</span></div>
+            <div class="conv-preview">서준: 이번 주 토요일 6시 맞죠?</div>
+          </div>
+          <div class="conv-unread">1</div>
+        </div>
+        <div class="conv-item">
+          <div class="conv-avatar d">소</div>
+          <div class="conv-info">
+            <div class="conv-name">소영님 <span class="conv-time">지난주</span></div>
+            <div class="conv-preview">다음에 또 같이 가요!</div>
+          </div>
+        </div>
+        <div class="conv-item">
+          <div class="conv-avatar group">🎮</div>
+          <div class="conv-info">
+            <div class="conv-name">보드게임 모임 <span class="conv-time">지난주</span></div>
+            <div class="conv-preview">주원: 다음 모임 언제예요?</div>
+          </div>
+        </div>
+        <div class="conv-item">
+          <div class="conv-avatar c">태</div>
+          <div class="conv-info">
+            <div class="conv-name">태호님 <span class="conv-time">2주 전</span></div>
+            <div class="conv-preview">감사합니다 :)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 오른쪽: 채팅창 -->
+    <div class="msg-chat">
+      <div class="chat-header">
+        <div class="chat-header-avatar">
+          지
+          <div class="online"></div>
+        </div>
+        <div class="chat-header-info">
+          <div class="chat-header-name">지현님</div>
+          <div class="chat-header-status">● 온라인</div>
+        </div>
+        <div class="chat-header-actions">
+          <div class="chat-action-btn" title="모임 함께 보기">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="chat-action-btn" title="더보기">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-messages">
+        <div class="date-divider">2026년 5월 27일</div>
+
+        <div class="msg-row">
+          <div class="msg-row-avatar a">지</div>
+          <div class="msg-bubbles">
+            <div class="msg-sender">지현님</div>
+            <div class="msg-bubble other">안녕하세요! 마포 러닝 모임에서 봤는데 혹시 토요일 참가하세요?</div>
+            <div class="msg-time">오후 2:14</div>
+          </div>
+        </div>
+
+        <div class="msg-row mine">
+          <div class="msg-row-avatar b">나</div>
+          <div class="msg-bubbles">
+            <div class="msg-bubble mine">네, 참가 신청 했어요! 토요일 7시 맞죠?</div>
+            <div class="msg-time">오후 2:16</div>
+          </div>
+        </div>
+
+        <div class="msg-row">
+          <div class="msg-row-avatar a">지</div>
+          <div class="msg-bubbles">
+            <div class="msg-bubble other">맞아요 😊 한강 입구에서 만나요!</div>
+            <div class="msg-bubble other">혹시 러닝화 신으시나요?</div>
+            <div class="msg-time">오후 2:17</div>
+          </div>
+        </div>
+
+        <div class="msg-row mine">
+          <div class="msg-row-avatar b">나</div>
+          <div class="msg-bubbles">
+            <div class="msg-bubble mine">네! 요즘 러닝 시작해서 입문자용으로 신고 있어요 ㅎㅎ</div>
+            <div class="msg-time">오후 2:19</div>
+          </div>
+        </div>
+
+        <div class="date-divider">오늘</div>
+
+        <div class="msg-row">
+          <div class="msg-row-avatar a">지</div>
+          <div class="msg-bubbles">
+            <div class="msg-sender">지현님</div>
+            <div class="msg-bubble other">토요일 같이 가도 될까요? 😊</div>
+            <div class="msg-time">오전 10:32</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="chat-attach-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+        </div>
+        <div class="chat-input-wrap">
+          <input type="text" placeholder="메시지를 입력하세요...">
+        </div>
+        <button class="chat-send-btn">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ OPTION B: 플로팅 드로어 ══ -->
+<div class="page-body" id="optionB" style="display:none; height:auto;">
+  <div class="option-b-wrap" style="display:block;">
+    <div class="option-b-bg"></div>
+    <div style="position:absolute; inset:0; display:flex; align-items:center; padding-left:40px;">
+      <div>
+        <div style="font-size:32px; font-weight:800; color:var(--ink); letter-spacing:-0.03em;">
+          어느 페이지에서든<br>바로 열리는 메신저
+        </div>
+        <p style="color:var(--muted); margin-top:10px; font-size:15px;">
+          우측 하단 버튼 클릭 → 슬라이드인 드로어
+        </p>
+        <p style="color:var(--muted-2); margin-top:6px; font-size:13px;">
+          모임 목록 보면서 채팅 가능 · 구현 복잡도↑ · 모바일 UX↓
+        </p>
+      </div>
+    </div>
+    <!-- 드로어 -->
+    <div class="drawer">
+      <div class="drawer-header">
+        <div class="drawer-title">💬 메시지</div>
+        <div class="drawer-close">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </div>
+      </div>
+      <div class="drawer-list">
+        <div class="conv-item active">
+          <div class="conv-avatar b">지<div class="conv-online"></div></div>
+          <div class="conv-info">
+            <div class="conv-name">지현님 <span class="conv-time">2분 전</span></div>
+            <div class="conv-preview">토요일 같이 가도 될까요? 😊</div>
+          </div>
+          <div class="conv-unread">2</div>
+        </div>
+        <div class="conv-item">
+          <div class="conv-avatar a">민</div>
+          <div class="conv-info">
+            <div class="conv-name">민준님 <span class="conv-time">어제</span></div>
+            <div class="conv-preview">확인했어요! 내일 봬요~</div>
+          </div>
+        </div>
+        <div class="conv-item">
+          <div class="conv-avatar group">🏃</div>
+          <div class="conv-info">
+            <div class="conv-name">마포 러닝 크루 <span class="conv-time">월요일</span></div>
+            <div class="conv-preview">이번 주 토요일 6시 맞죠?</div>
+          </div>
+          <div class="conv-unread">1</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <div class="msg-fab">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <div class="msg-fab-badge">3</div>
+    </div>
+  </div>
+
+  <!-- 비교 요약 -->
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px;">
+    <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-lg); padding:22px; box-shadow:var(--shadow-2);">
+      <div style="font-family:var(--font-mono); font-size:10.5px; letter-spacing:.14em; color:var(--muted); text-transform:uppercase; margin-bottom:12px;">Option A — 별도 페이지</div>
+      <div style="display:flex; flex-direction:column; gap:8px; font-size:13.5px; color:var(--ink-2);">
+        <div>✅ 구현 간단 (Spring MVC 페이지 추가)</div>
+        <div>✅ 모바일 대응 쉬움</div>
+        <div>✅ 기존 디자인과 자연스럽게 통합</div>
+        <div>✅ 그룹채팅 확장도 깔끔</div>
+        <div>⬜ 페이지 이동 필요</div>
+      </div>
+    </div>
+    <div style="background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-lg); padding:22px; box-shadow:var(--shadow-2);">
+      <div style="font-family:var(--font-mono); font-size:10.5px; letter-spacing:.14em; color:var(--muted); text-transform:uppercase; margin-bottom:12px;">Option B — 플로팅 드로어</div>
+      <div style="display:flex; flex-direction:column; gap:8px; font-size:13.5px; color:var(--ink-2);">
+        <div>✅ 어느 페이지에서든 접근</div>
+        <div>✅ 카카오톡 느낌</div>
+        <div>⚠️ JS 상태 관리 복잡</div>
+        <div>⚠️ 모바일 레이아웃 어려움</div>
+        <div>⚠️ 기존 FAB(모임 만들기)와 충돌</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showOption(opt, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('optionA').style.display = opt === 'a' ? 'block' : 'none';
+    document.getElementById('optionB').style.display = opt === 'b' ? 'block' : 'none';
+  }
+</script>
+</body>
+</html>

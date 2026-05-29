@@ -40,6 +40,9 @@ public class Users {
     @Column(name = "user_lng")
     private Double userLng;  // 경도
 
+    @Column(name = "profile_img", length = 255)
+    private String profileImg;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -66,5 +69,10 @@ public class Users {
         this.userAddress = userAddress;
         this.userLat = userLat;
         this.userLng = userLng;
+    }
+
+    // 프로필 이미지 수정
+    public void updateProfileImg(String profileImg) {
+        this.profileImg = profileImg;
     }
 }

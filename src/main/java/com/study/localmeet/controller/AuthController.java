@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -57,6 +58,39 @@ public class AuthController {
     @GetMapping("/check-nickname")
     public boolean checkNickname(@RequestParam String userNickname) {
         return authService.checkNickname(userNickname);
+    }
+
+    @PostMapping("/profile-image")
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    public ResponseEntity<Map<String, Object>> uploadProfileImage(
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        try {
+            String imgUrl = authService.uploadProfileImage(authentication.getName(), file);
+            result.put("success", true);
+            result.put("imgUrl", imgUrl);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
+    @DeleteMapping("/profile-image")
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    public ResponseEntity<Map<String, Object>> resetProfileImage(Authentication authentication) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        try {
+            authService.resetProfileImage(authentication.getName());
+            result.put("success", true);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(result);
+        }
     }
 
     @PostMapping("/address")

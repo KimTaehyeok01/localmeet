@@ -965,8 +965,14 @@
     const payload = JSON.parse(atob(token.split('.')[1]));
     const isAdmin = payload.roles && payload.roles.includes('ROLE_ADMIN');
     navMenu.innerHTML += (isAdmin ? `<a href="/view/admin">관리자</a>` : '')
+      + `<a href="/view/messages" id="navMsgLink" style="position:relative">💬 메시지<span id="navUnreadBadge" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--warn);"></span></a>`
       + `<a href="/view/mypage">마이페이지</a>
       <button class="btn-primary-sm" onclick="logout()">로그아웃</button>`;
+    // 미읽은 메시지 뱃지
+    fetch('/api/messages/unread-count', { headers: { 'JWT_TOKEN': token } })
+      .then(r => r.json())
+      .then(data => { if (data.count > 0) document.getElementById('navUnreadBadge').style.display = 'block'; })
+      .catch(() => {});
   } else {
     navMenu.innerHTML += `<a href="/view/login">로그인</a>
       <a href="/view/signup" class="btn-primary-sm">회원가입</a>`;

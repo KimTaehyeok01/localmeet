@@ -16,6 +16,7 @@ public class UserResponseDto {
     private String userAddress;
     private Double userLat;
     private Double userLng;
+    private String profileImg;
     private LocalDateTime createdAt;
 
     // Entity -> DTO 변환
@@ -27,6 +28,7 @@ public class UserResponseDto {
         this.userAddress = entity.getUserAddress();
         this.userLat = entity.getUserLat();
         this.userLng = entity.getUserLng();
+        this.profileImg = entity.getProfileImg();
         this.createdAt = entity.getCreatedAt();
     }
 }

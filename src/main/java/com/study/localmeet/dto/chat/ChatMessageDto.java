@@ -23,12 +23,15 @@ public class ChatMessageDto {
         this.chatContent = chatContent;
     }
 
+    private String profileImg;
+
     // Entity -> DTO 변환
     public ChatMessageDto(ChatMessage entity) {
         this.chatIdx = entity.getChatIdx();
         this.meetingIdx = entity.getMeeting().getMeetingIdx();
         this.userIdx = entity.getUsers().getUserIdx();
         this.userNickname = entity.getUsers().getUserNickname();
+        this.profileImg = entity.getUsers().getProfileImg();
         this.chatContent = entity.getChatContent();
         this.createdAt = entity.getCreatedAt();
     }

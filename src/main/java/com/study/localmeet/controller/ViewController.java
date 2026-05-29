@@ -74,6 +74,11 @@ public class ViewController {
         return "auth/oauth2Success";
     }
 
+    @GetMapping("/view/messages")
+    public String messagesPage() {
+        return "messenger/messagesForm";
+    }
+
     @GetMapping("/view/admin")
     @Secured("ROLE_ADMIN")
     public String adminPage() {

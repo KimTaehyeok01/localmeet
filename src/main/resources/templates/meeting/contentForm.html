@@ -268,21 +268,67 @@
       display: flex; flex-direction: column; gap: 12px;
       background: var(--surface-2);
     }
-    .chat-msg{ display: flex; flex-direction: column; gap: 3px; }
-    .chat-msg-author{ font-size: 12px; font-weight: 700; color: var(--accent); }
+    /* 카카오톡 스타일 채팅 */
+    .chat-row{
+      display: flex; align-items: flex-end; gap: 8px;
+    }
+    .chat-row.mine{ flex-direction: row-reverse; }
+
+    .chat-avatar{
+      width: 32px; height: 32px; border-radius: 50%;
+      flex-shrink: 0; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      align-self: flex-start;
+    }
+    .chat-avatar img{ width: 100%; height: 100%; object-fit: cover; }
+
+    .chat-bubble-wrap{
+      display: flex; flex-direction: column; gap: 3px; max-width: 72%;
+      align-items: flex-start; /* 기본: 왼쪽 정렬, 버블이 내용 크기만큼만 늘어남 */
+    }
+    .chat-row.mine .chat-bubble-wrap{
+      align-items: flex-end; /* 내 메시지: 오른쪽 정렬 */
+    }
+
+    .chat-msg-author{
+      font-size: 11.5px; font-weight: 700; color: var(--accent);
+      padding: 0 4px;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .chat-msg-author:hover{ opacity: .7; text-decoration: underline; }
+    .chat-msg-author.mine-author{
+      color: var(--muted); cursor: default; text-decoration: none;
+    }
+    .chat-msg-author.mine-author:hover{ opacity: 1; }
+
     .chat-msg-content{
       background: #fff;
       border: 1px solid var(--line);
-      border-radius: 6px 14px 14px 14px;
-      padding: 10px 12px;
+      border-radius: 4px 14px 14px 14px;
+      padding: 9px 14px;
       font-size: 13.5px;
       color: var(--ink);
-      display: inline-block;
-      max-width: 80%;
+      display: inline-block;      /* 내용 너비만큼만 차지 */
+      max-width: 100%;            /* bubble-wrap 너비 초과 금지 */
       box-shadow: var(--shadow-1);
-      word-break: break-word;
+      word-break: keep-all;       /* 단어 단위로 줄바꿈 */
+      overflow-wrap: break-word;  /* 아주 긴 단어는 강제 줄바꿈 */
+      line-height: 1.55;
+      white-space: pre-wrap;      /* 연속 공백 유지, 필요할 때만 줄바꿈 */
     }
-    .chat-msg-time{ font-size: 11px; color: var(--muted); }
+    .chat-row.mine .chat-msg-content{
+      background: linear-gradient(135deg, var(--accent), #0E8AB8);
+      color: #fff;
+      border: none;
+      border-radius: 14px 4px 14px 14px;
+      box-shadow: 0 4px 14px -4px rgba(31,166,214,.45);
+    }
+    .chat-msg-time{
+      font-size: 10.5px; color: var(--muted-2); padding: 0 4px;
+    }
 
     .chat-input-area{
       display: flex; gap: 8px;
@@ -319,6 +365,50 @@
       white-space: nowrap;
     }
     .chat-send-btn:hover{ filter: brightness(1.06); }
+
+    /* 유저 팝업 */
+    .user-popup {
+      position: fixed; z-index: 200;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-3);
+      padding: 20px;
+      width: 220px;
+      display: none;
+      animation: popupIn .18s cubic-bezier(.2,.7,.2,1);
+    }
+    @keyframes popupIn {
+      from { opacity: 0; transform: scale(.94) translateY(4px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .user-popup-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      margin: 0 auto 10px;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+    }
+    .user-popup-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-popup-name {
+      text-align: center; font-size: 15px; font-weight: 800;
+      color: var(--ink); letter-spacing: -0.02em; margin-bottom: 14px;
+    }
+    .user-popup-btn {
+      width: 100%; padding: 9px 0;
+      border-radius: 10px; border: none; cursor: pointer;
+      font-size: 13px; font-weight: 700; font-family: var(--font-kr);
+      transition: filter .15s, transform .15s;
+    }
+    .user-popup-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+    .btn-friend-add {
+      background: linear-gradient(135deg, var(--accent), #0E8AB8);
+      color: #fff; box-shadow: 0 4px 12px -4px rgba(31,166,214,.5);
+    }
+    .btn-friend-pending { background: var(--surface-2); color: var(--muted); cursor: default; }
+    .btn-friend-accepted { background: color-mix(in oklab, var(--ok) 12%, white); color: var(--ok); cursor: default; }
+    .btn-dm { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); margin-top: 7px; }
 
     .toast-container{
       position: fixed; left: 50%; bottom: 28px;
@@ -459,6 +549,14 @@
 
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- 유저 팝업 -->
+<div class="user-popup" id="userPopup">
+  <div class="user-popup-avatar" id="popupAvatar">🙋</div>
+  <div class="user-popup-name" id="popupName"></div>
+  <button class="user-popup-btn btn-friend-add" id="popupFriendBtn" onclick="sendFriendRequest()">👋 친구 추가</button>
+  <button class="user-popup-btn btn-dm" onclick="startDM()">💬 1:1 메시지</button>
+</div>
+
 <script th:inline="javascript">
   const meetingIdx        = /*[[${meetingIdx}]]*/ 0;
   const meetingLat        = /*[[${dto.meetingLat}]]*/ null;
@@ -476,7 +574,7 @@
   // 네비 상태
   const navMenu = document.getElementById('navMenu');
   if (token) {
-    navMenu.innerHTML += `<a href="/view/mypage">마이페이지</a>
+    navMenu.innerHTML += `<a href="/view/messages">💬 메시지</a><a href="/view/mypage">마이페이지</a>
       <button onclick="doLogout()" style="background:none;border:none;cursor:pointer;color:var(--gray-600);font-size:0.9rem;">로그아웃</button>`;
   } else {
     navMenu.innerHTML += `<a href="/view/login">로그인</a>`;
@@ -619,18 +717,31 @@
   // ── 채팅 ──
   let stompClient = null;
   const renderedChatIds = new Set();
+  let myUserIdx = null;
 
-  fetch(`/api/chat/${meetingIdx}`)
-  .then(r => r.json())
-  .then(msgs => {
-    const box = document.getElementById('chatBox');
-    if (msgs.length === 0) {
-      box.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:0.85rem;margin:auto;">첫 메시지를 남겨보세요!</div>';
-    } else {
-      box.innerHTML = '';
-      msgs.forEach(m => appendChat(m));
-    }
-  });
+  // myUserIdx를 먼저 받은 뒤 채팅 로드 (내 메시지 오른쪽 정렬 위해)
+  function loadChatHistory() {
+    fetch(`/api/chat/${meetingIdx}`)
+    .then(r => r.json())
+    .then(msgs => {
+      const box = document.getElementById('chatBox');
+      if (msgs.length === 0) {
+        box.innerHTML = '<div style="text-align:center;color:#9ca3af;font-size:0.85rem;margin:auto;">첫 메시지를 남겨보세요!</div>';
+      } else {
+        box.innerHTML = '';
+        msgs.forEach(m => appendChat(m));
+      }
+    });
+  }
+
+  if (token) {
+    fetch('/api/auth/mypage', { headers: { 'JWT_TOKEN': token } })
+      .then(r => r.json())
+      .then(u => { myUserIdx = u.userIdx; })
+      .finally(() => loadChatHistory());
+  } else {
+    loadChatHistory();
+  }
 
   function connectChat() {
     const socket = new SockJS('/ws/chat');
@@ -674,15 +785,159 @@
     const empty = box.querySelector('[style*="margin:auto"]');
     if (empty) empty.remove();
 
-    const div = document.createElement('div');
-    div.className = 'chat-msg';
-    const time = msg.createdAt ? msg.createdAt.substring(0,16).replace('T',' ') : '';
-    div.innerHTML = `<span class="chat-msg-author">${msg.userNickname}</span>
-      <span class="chat-msg-content">${msg.chatContent}</span>
-      <span class="chat-msg-time">${time}</span>`;
-    box.appendChild(div);
+    const isMine = myUserIdx != null && msg.userIdx === myUserIdx;
+    const initial = (msg.userNickname || '?').charAt(0);
+    const avatarInner = msg.profileImg
+      ? `<img src="${msg.profileImg}" alt="">`
+      : initial;
+
+    const time = msg.createdAt ? msg.createdAt.substring(11, 16) : '';
+    const safeNick = (msg.userNickname || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const safeImg  = (msg.profileImg  || '').replace(/'/g, "\\'");
+
+    const row = document.createElement('div');
+    row.className = 'chat-row' + (isMine ? ' mine' : '');
+
+    if (isMine) {
+      // 내 메시지: 버블 왼쪽 → 오른쪽, 아바타 맨 오른쪽
+      row.innerHTML = `
+        <div class="chat-bubble-wrap">
+          <div class="chat-msg-content">${escChat(msg.chatContent)}</div>
+          <span class="chat-msg-time" style="text-align:right;">${time}</span>
+        </div>
+        <div class="chat-avatar">${avatarInner}</div>`;
+    } else {
+      // 상대 메시지: 아바타 왼쪽, 닉네임 + 버블 오른쪽
+      row.innerHTML = `
+        <div class="chat-avatar">${avatarInner}</div>
+        <div class="chat-bubble-wrap">
+          <span class="chat-msg-author"
+                onclick="showUserPopup(${msg.userIdx},'${safeNick}','${safeImg}',event)"
+          >${escChat(msg.userNickname)}</span>
+          <div class="chat-msg-content">${escChat(msg.chatContent)}</div>
+          <span class="chat-msg-time">${time}</span>
+        </div>`;
+    }
+
+    box.appendChild(row);
     box.scrollTop = box.scrollHeight;
   }
+
+  function escChat(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── 유저 팝업 ──
+  let popupTargetUserIdx = null;
+
+  function showUserPopup(userIdx, nickname, profileImg, event) {
+    if (!token) return;
+    event.stopPropagation();
+    popupTargetUserIdx = userIdx;
+
+    const popup = document.getElementById('userPopup');
+    const avatarEl = document.getElementById('popupAvatar');
+    const nameEl   = document.getElementById('popupName');
+    const friendBtn = document.getElementById('popupFriendBtn');
+
+    // 아바타
+    avatarEl.innerHTML = profileImg
+      ? `<img src="${profileImg}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">`
+      : `<span style="font-size:1.3rem">🙋</span>`;
+    nameEl.textContent = nickname;
+
+    // 버튼 초기화
+    friendBtn.textContent = '👋 친구 추가';
+    friendBtn.className = 'user-popup-btn btn-friend-add';
+    friendBtn.disabled = false;
+
+    // 팝업 위치 (position:fixed → viewport 좌표 그대로 사용)
+    popup.style.display = 'block';
+    const rect = event.target.getBoundingClientRect();
+    const pw = popup.offsetWidth || 220;
+    const ph = popup.offsetHeight || 160;
+    let left = rect.left;
+    let top  = rect.bottom + 6;
+    if (left + pw > window.innerWidth - 12) left = window.innerWidth - pw - 12;
+    if (top  + ph > window.innerHeight - 12) top = rect.top - ph - 6;
+    popup.style.left = left + 'px';
+    popup.style.top  = top  + 'px';
+
+    // 친구 상태 조회
+    fetch(`/api/friends/status/${userIdx}`, { headers: { 'JWT_TOKEN': token } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'ACCEPTED') {
+          friendBtn.textContent = '✅ 이미 친구';
+          friendBtn.className = 'user-popup-btn btn-friend-accepted';
+          friendBtn.disabled = true;
+        } else if (data.status === 'PENDING_SENT') {
+          friendBtn.textContent = '⏳ 요청 보냄';
+          friendBtn.className = 'user-popup-btn btn-friend-pending';
+          friendBtn.disabled = true;
+        } else if (data.status === 'PENDING_RECEIVED') {
+          friendBtn.textContent = '✉️ 요청 수락하기';
+          friendBtn.className = 'user-popup-btn btn-friend-add';
+          friendBtn.disabled = false;
+          friendBtn.dataset.friendIdx = data.friendIdx;
+          friendBtn.onclick = () => acceptFriendRequest(data.friendIdx);
+        }
+      }).catch(() => {});
+  }
+
+  function sendFriendRequest() {
+    if (!popupTargetUserIdx) return;
+    fetch(`/api/friends/request/${popupTargetUserIdx}`, {
+      method: 'POST', headers: { 'JWT_TOKEN': token }
+    })
+    .then(r => r.json())
+    .then(data => {
+      showToast(data.message, data.success ? 'success' : 'error');
+      if (data.success) {
+        const btn = document.getElementById('popupFriendBtn');
+        btn.textContent = '⏳ 요청 보냄';
+        btn.className = 'user-popup-btn btn-friend-pending';
+        btn.disabled = true;
+      }
+    })
+    .catch(() => showToast('오류가 발생했습니다.', 'error'));
+  }
+
+  function acceptFriendRequest(friendIdx) {
+    fetch(`/api/friends/accept/${friendIdx}`, {
+      method: 'POST', headers: { 'JWT_TOKEN': token }
+    })
+    .then(r => r.json())
+    .then(data => {
+      showToast(data.message, data.success ? 'success' : 'error');
+      if (data.success) {
+        const btn = document.getElementById('popupFriendBtn');
+        btn.textContent = '✅ 이미 친구';
+        btn.className = 'user-popup-btn btn-friend-accepted';
+        btn.disabled = true;
+      }
+    });
+  }
+
+  function startDM() {
+    if (!popupTargetUserIdx) return;
+    fetch(`/api/messages/conversations/dm/${popupTargetUserIdx}`, {
+      method: 'POST', headers: { 'JWT_TOKEN': token }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.convIdx) location.href = `/view/messages?conv=${data.convIdx}`;
+    })
+    .catch(() => showToast('메시지를 열 수 없습니다.', 'error'));
+  }
+
+  // 팝업 바깥 클릭 시 닫기
+  document.addEventListener('click', e => {
+    const popup = document.getElementById('userPopup');
+    if (!popup.contains(e.target)) popup.style.display = 'none';
+  });
 
   document.getElementById('chatInput').addEventListener('keypress', e => { if (e.key === 'Enter') sendChat(); });
   connectChat();

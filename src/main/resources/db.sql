@@ -75,6 +75,57 @@ CREATE TABLE chat_message (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ================================
+-- 5. 친구 관계 테이블
+-- ================================
+CREATE TABLE friendship (
+    friend_idx    BIGINT      NOT NULL AUTO_INCREMENT,
+    requester_idx BIGINT      NOT NULL,
+    receiver_idx  BIGINT      NOT NULL,
+    status        VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    created_at    DATETIME    NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (friend_idx),
+    UNIQUE KEY uq_friendship (requester_idx, receiver_idx),
+    FOREIGN KEY (requester_idx) REFERENCES users(user_idx),
+    FOREIGN KEY (receiver_idx)  REFERENCES users(user_idx)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ================================
+-- 6. 대화방 테이블
+-- ================================
+CREATE TABLE conversation (
+    conv_idx   BIGINT   NOT NULL AUTO_INCREMENT,
+    created_at DATETIME NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (conv_idx)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ================================
+-- 6. 대화방 참여자 테이블
+-- ================================
+CREATE TABLE conversation_member (
+    cm_idx       BIGINT   NOT NULL AUTO_INCREMENT,
+    conv_idx     BIGINT   NOT NULL,
+    user_idx     BIGINT   NOT NULL,
+    last_read_at DATETIME,
+    PRIMARY KEY (cm_idx),
+    FOREIGN KEY (conv_idx) REFERENCES conversation(conv_idx),
+    FOREIGN KEY (user_idx) REFERENCES users(user_idx)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ================================
+-- 7. DM 메시지 테이블
+-- ================================
+CREATE TABLE direct_message (
+    dm_idx     BIGINT   NOT NULL AUTO_INCREMENT,
+    conv_idx   BIGINT   NOT NULL,
+    sender_idx BIGINT   NOT NULL,
+    dm_content TEXT     NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (dm_idx),
+    FOREIGN KEY (conv_idx)   REFERENCES conversation(conv_idx),
+    FOREIGN KEY (sender_idx) REFERENCES users(user_idx)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ================================
 -- 테스트 데이터
 -- ================================
 

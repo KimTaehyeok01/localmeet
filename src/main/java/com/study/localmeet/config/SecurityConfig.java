@@ -49,7 +49,9 @@ public class SecurityConfig {
                                 "/api/weather/**",
                                 "/css/**", "/js/**", "/images/**",
                                 "/ws/**",
-                                "/login/oauth2/**", "/oauth2/**"
+                                "/login/oauth2/**", "/oauth2/**",
+                                "/api/users/search",
+                                "/uploads/**"
                         ).permitAll()
                         .requestMatchers("/view/admin", "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

@@ -200,6 +200,51 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 2.3rem;
       backdrop-filter: blur(8px);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: filter .2s;
+    }
+    .avatar-wrap:hover{ filter: brightness(0.85); }
+    .avatar-wrap:hover::after{
+      content: '📷';
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      background: rgba(0,0,0,.28);
+      border-radius: 50%;
+    }
+    /* 프로필 옵션 메뉴 */
+    .avatar-menu {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 50%; transform: translateX(-50%);
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      box-shadow: 0 8px 28px -6px rgba(11,32,54,.22);
+      overflow: hidden;
+      z-index: 50;
+      min-width: 160px;
+      display: none;
+    }
+    .avatar-menu.open { display: block; animation: menuIn .16s cubic-bezier(.2,.7,.2,1); }
+    @keyframes menuIn { from{opacity:0;transform:translateX(-50%) translateY(-6px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+    .avatar-menu-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px;
+      font-size: 13.5px; font-weight: 600; color: #0B2036;
+      cursor: pointer;
+      transition: background .12s;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .avatar-menu-item:last-child { border-bottom: none; }
+    .avatar-menu-item:hover { background: #f8fafc; }
+    .avatar-menu-item.danger { color: #FF5D78; }
+    .avatar-wrap img{
+      width: 100%; height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
     }
     .hero-nickname{
       font-size: clamp(30px, 3vw, 40px);
@@ -409,7 +454,21 @@
   <section class="profile-card">
     <div class="profile-inner">
       <span class="profile-eyebrow">My profile</span>
-      <div class="avatar-wrap">🙋</div>
+      <div class="avatar-wrap" onclick="toggleAvatarMenu(event)" title="프로필 사진 변경" style="position:relative;overflow:visible;">
+        <div style="width:100%;height:100%;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+          <img id="avatarImg" style="display:none;width:100%;height:100%;object-fit:cover;" alt="프로필">
+          <span id="avatarEmoji">🙋</span>
+        </div>
+        <div class="avatar-menu" id="avatarMenu">
+          <div class="avatar-menu-item" onclick="document.getElementById('profileImgInput').click();closeAvatarMenu()">
+            📷 사진 변경
+          </div>
+          <div class="avatar-menu-item danger" id="resetMenuBtn" onclick="resetProfileImg()" style="display:none;">
+            🗑️ 기본으로 변경
+          </div>
+        </div>
+      </div>
+      <input type="file" id="profileImgInput" accept="image/*" style="display:none;" onchange="uploadProfileImg(this)">
       <div class="hero-nickname" id="nickname">불러오는 중...</div>
       <div class="hero-email" id="email"></div>
       <span class="role-badge" id="role"></span>
@@ -491,7 +550,85 @@
     if (!u.userAddress) addrEl.classList.add('muted');
 
     document.getElementById('createdAt').textContent = u.createdAt ? u.createdAt.substring(0, 10) : '-';
+
+    // 프로필 이미지 설정
+    setAvatarImg(u.profileImg);
   });
+
+  function setAvatarImg(url) {
+    const img      = document.getElementById('avatarImg');
+    const emoji    = document.getElementById('avatarEmoji');
+    const resetBtn = document.getElementById('resetMenuBtn');
+    if (url) {
+      img.src = url;
+      img.style.display = 'block';
+      emoji.style.display = 'none';
+      if (resetBtn) resetBtn.style.display = '';
+    } else {
+      img.style.display = 'none';
+      emoji.style.display = '';
+      if (resetBtn) resetBtn.style.display = 'none';
+    }
+  }
+
+  function toggleAvatarMenu(e) {
+    e.stopPropagation();
+    document.getElementById('avatarMenu').classList.toggle('open');
+  }
+  function closeAvatarMenu() {
+    document.getElementById('avatarMenu').classList.remove('open');
+  }
+  document.addEventListener('click', () => closeAvatarMenu());
+
+  function resetProfileImg() {
+    if (!confirm('기본 프로필로 되돌리시겠습니까?')) return;
+    closeAvatarMenu();
+    fetch('/api/auth/profile-image', {
+      method: 'DELETE',
+      headers: { 'JWT_TOKEN': token }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        setAvatarImg(null);
+        showToast('기본 프로필로 변경되었습니다.', 'success');
+      } else {
+        showToast(data.message || '초기화 실패', 'error');
+      }
+    })
+    .catch(() => showToast('오류가 발생했습니다.', 'error'));
+  }
+
+  function uploadProfileImg(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // 미리보기
+    const reader = new FileReader();
+    reader.onload = e => setAvatarImg(e.target.result);
+    reader.readAsDataURL(file);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('/api/auth/profile-image', {
+      method: 'POST',
+      headers: { 'JWT_TOKEN': token },
+      body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        showToast('프로필 사진이 변경되었습니다!', 'success');
+        setAvatarImg(data.imgUrl);
+      } else {
+        showToast(data.message || '업로드 실패', 'error');
+      }
+    })
+    .catch(() => showToast('업로드 중 오류가 발생했습니다.', 'error'));
+
+    input.value = '';
+  }
 
   function logout() {
     localStorage.removeItem('JWT_TOKEN');
