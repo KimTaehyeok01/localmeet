@@ -45,7 +45,7 @@ public class MeetingMember {
         this.isApproved = false;
     }
 
-    // 참가승인
+    // 참가 승인
     public void approve() {
         this.isApproved = true;
     }
