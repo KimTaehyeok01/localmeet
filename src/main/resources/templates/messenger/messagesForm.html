@@ -440,7 +440,7 @@ let currentSubscription = null;
 // ── 인증 체크 ──────────────────────────────────────────────────────────
 if (!token) { location.href = '/view/login'; }
 
-// ── 네비바 ──────────────────────────────────────────────────────────────
+// ── 네비바 ────────────────────────────────────────────────────────────
 const navMenu = document.getElementById('navMenu');
 fetch('/api/auth/mypage', { headers: { 'JWT_TOKEN': token } })
   .then(r => r.json())
