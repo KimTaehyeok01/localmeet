@@ -448,12 +448,6 @@ fetch('/api/auth/mypage', { headers: { 'JWT_TOKEN': token } })
     myUserIdx = user.userIdx;
     myNickname = user.userNickname;
     const isAdmin = user.userRole === 'ROLE_ADMIN';
-    navMenu.innerHTML = (isAdmin ? `<a href="/view/admin">관리자</a>` : '')
-      + `<a href="/view/meetings">모임 탐색</a>`
-      + `<a href="/view/messages" class="active">💬 메시지</a>`
-      + `<a href="/view/mypage">마이페이지</a>`
-      + `<button class="btn-primary-sm" onclick="doLogout()">로그아웃</button>`;
-    const isAdmin = user.userRole === 'ROLE_ADMIN';
     document.getElementById('navMenu').innerHTML =
       (isAdmin ? `<a href="/view/admin">관리자</a>` : '')
       + `<a href="/view/meetings">모임 탐색</a>`
