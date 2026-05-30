@@ -689,6 +689,27 @@
     actionArea.innerHTML = `<button class="btn-join" onclick="location.href='/view/login'">로그인 후 참가 신청</button>`;
   }
 
+  // ── DM 실시간 알림 ───────────────────────────────────────────────────
+  function initDmNotification() {
+    if (!token) return;
+    if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+    const es = new EventSource('/api/notifications/subscribe');
+    es.addEventListener('dm', e => {
+      try {
+        const data = JSON.parse(e.data);
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        if ('Notification' in window && Notification.permission === 'granted') {
+          const n = new Notification('💬 ' + data.senderNickname, { body: data.content, icon: '/favicon.ico', tag: 'dm-' + data.convIdx });
+          n.onclick = () => { window.focus(); location.href = '/view/messages?conv=' + data.convIdx; };
+          setTimeout(() => n.close(), 5000);
+        }
+        showToast('💬 ' + data.senderNickname + ': ' + data.content.substring(0, 30));
+      } catch(err) {}
+    });
+    es.onerror = () => { setTimeout(initDmNotification, 10000); es.close(); };
+  }
+  initDmNotification();
+
   function showToast(msg, type = '') {
     const c = document.getElementById('toastContainer');
     const t = document.createElement('div'); t.className='toast '+type; t.textContent=msg; c.appendChild(t);

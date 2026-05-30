@@ -136,6 +136,17 @@ public class MessengerService {
         return new DirectMessageDto(dm);
     }
 
+    // DM 수신자 이메일 목록 (발신자 제외)
+    @Transactional(readOnly = true)
+    public List<String> getRecipientEmails(Long convIdx, String senderEmail) {
+        Users sender = findUser(senderEmail);
+        return conversationMemberRepository.findAllByConversation_ConvIdx(convIdx)
+                .stream()
+                .filter(cm -> !cm.getUser().getUserIdx().equals(sender.getUserIdx()))
+                .map(cm -> cm.getUser().getUserEmail())
+                .collect(Collectors.toList());
+    }
+
     // 전체 미읽은 메시지 수
     @Transactional(readOnly = true)
     public long getTotalUnread(String userEmail) {

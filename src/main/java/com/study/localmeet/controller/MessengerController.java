@@ -24,6 +24,7 @@ public class MessengerController {
     private final MessengerService messengerService;
     private final SimpMessagingTemplate messagingTemplate;
     private final JwtUtil jwtUtil;
+    private final com.study.localmeet.service.NotificationService notificationService;
 
     // 내 대화 목록
     @GetMapping("/api/messages/conversations")
@@ -66,6 +67,10 @@ public class MessengerController {
         try {
             DirectMessageDto dto = messengerService.sendMessage(convIdx, auth.getName(), body.get("content"));
             messagingTemplate.convertAndSend("/topic/dm/" + convIdx, dto);
+            // SSE 알림 → 수신자에게 전송
+            messengerService.getRecipientEmails(convIdx, auth.getName())
+                    .forEach(email -> notificationService.sendDmNotification(
+                            email, dto.getSenderNickname(), dto.getDmContent(), convIdx));
             return ResponseEntity.ok(dto);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
@@ -103,6 +108,10 @@ public class MessengerController {
             String senderEmail = jwtUtil.getEmail(token);
             DirectMessageDto dto = messengerService.sendMessage(convIdx, senderEmail, content);
             messagingTemplate.convertAndSend("/topic/dm/" + convIdx, dto);
+            // SSE 알림
+            messengerService.getRecipientEmails(convIdx, senderEmail)
+                    .forEach(email -> notificationService.sendDmNotification(
+                            email, dto.getSenderNickname(), dto.getDmContent(), convIdx));
         } catch (Exception ignored) {}
     }
 }

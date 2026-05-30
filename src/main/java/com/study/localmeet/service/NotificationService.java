@@ -59,4 +59,24 @@ public class NotificationService {
             }
         }
     }
+
+    // DM 수신 알림
+    public void sendDmNotification(String recipientEmail, String senderNickname,
+                                    String content, Long convIdx) {
+        SseEmitter emitter = emitters.get(recipientEmail);
+        if (emitter == null) return;
+        try {
+            String preview = content.length() > 40 ? content.substring(0, 40) + "…" : content;
+            // 특수문자 이스케이프
+            String safeNick    = senderNickname.replace("\\", "\\\\").replace("\"", "\\\"");
+            String safeContent = preview.replace("\\", "\\\\").replace("\"", "\\\"");
+            String data = "{\"senderNickname\":\"" + safeNick
+                    + "\",\"content\":\"" + safeContent
+                    + "\",\"convIdx\":" + convIdx + "}";
+            emitter.send(SseEmitter.event().name("dm").data(data));
+        } catch (IOException e) {
+            emitters.remove(recipientEmail);
+            log.warn("SSE DM notify failed for {}: {}", recipientEmail, e.getMessage());
+        }
+    }
 }
