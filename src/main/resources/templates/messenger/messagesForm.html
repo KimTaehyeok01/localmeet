@@ -297,11 +297,28 @@
     .friend-empty { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 12.5px; }
     .friend-empty .icon { font-size: 1.8rem; margin-bottom: 8px; opacity: .4; }
 
+    /* 햄버거 */
+    .hamburger-btn{display:none;flex-direction:column;gap:5px;padding:9px 10px;cursor:pointer;background:var(--surface-2);border:1.5px solid var(--line);border-radius:10px}
+    .hamburger-btn span{display:block;width:20px;height:2px;background:var(--ink-2);border-radius:2px;transition:all .22s}
+    .hamburger-btn.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+    .hamburger-btn.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+    .hamburger-btn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+    .mobile-menu{display:none;position:fixed;top:74px;left:12px;right:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:8px;z-index:29;box-shadow:var(--shadow-3);animation:mmIn .18s cubic-bezier(.2,.7,.2,1)}
+    .mobile-menu.open{display:block}
+    @keyframes mmIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+    .mobile-menu a,.mobile-menu .mm-btn{display:flex;align-items:center;gap:10px;padding:13px 16px;border-radius:10px;font-size:14.5px;font-weight:600;color:var(--ink-2);text-decoration:none;background:none;border:none;width:100%;cursor:pointer;font-family:var(--font-kr);transition:background .12s,color .12s;text-align:left}
+    .mobile-menu a:hover,.mobile-menu .mm-btn:hover{background:var(--surface-2);color:var(--accent)}
+    .mobile-menu a.mm-active{background:color-mix(in oklab,var(--accent) 10%,white);color:var(--accent)}
+    .mm-divider{height:1px;background:var(--line);margin:4px 8px}
+    .mm-btn.danger{color:var(--warn)}
+    .mm-btn.danger:hover{background:color-mix(in oklab,var(--warn) 10%,white)}
+
     /* ── 반응형 ── */
     @media (max-width: 1100px) { .friend-sidebar { display: none; } }
     @media (max-width: 760px) {
       .navbar { width: calc(100% - 20px); margin-top: 10px; padding: 8px 10px 8px 16px; }
-      .navbar-menu a:not(.active):not(.btn-primary-sm) { display: none; }
+      .hamburger-btn { display: flex; }
+      .navbar-menu { display: none !important; }
       .msg-wrapper { grid-template-columns: 1fr; padding: 0 10px; margin: 10px auto 10px; gap: 0; }
       .msg-sidebar { border-radius: 16px; }
       .msg-chat { display: none; }
@@ -340,7 +357,11 @@
     <a href="/view/meetings">모임 탐색</a>
     <a href="/view/messages" class="active">💬 메시지</a>
   </div>
+  <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()" aria-label="메뉴">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<div class="mobile-menu" id="mobileMenu"></div>
 
 <!-- 메인 레이아웃 -->
 <div class="msg-wrapper">
@@ -432,6 +453,20 @@ fetch('/api/auth/mypage', { headers: { 'JWT_TOKEN': token } })
       + `<a href="/view/messages" class="active">💬 메시지</a>`
       + `<a href="/view/mypage">마이페이지</a>`
       + `<button class="btn-primary-sm" onclick="doLogout()">로그아웃</button>`;
+    const isAdmin = user.userRole === 'ROLE_ADMIN';
+    document.getElementById('navMenu').innerHTML =
+      (isAdmin ? `<a href="/view/admin">관리자</a>` : '')
+      + `<a href="/view/meetings">모임 탐색</a>`
+      + `<a href="/view/messages" class="active">💬 메시지</a>`
+      + `<a href="/view/mypage">마이페이지</a>`
+      + `<button class="btn-primary-sm" onclick="doLogout()">로그아웃</button>`;
+    document.getElementById('mobileMenu').innerHTML =
+      `<a href="/view/meetings">🏠 모임 탐색</a>`
+      + (isAdmin ? `<a href="/view/admin">🛡 관리자 페이지</a>` : '')
+      + `<a href="/view/messages" class="mm-active">💬 메시지</a>`
+      + `<a href="/view/mypage">👤 마이페이지</a>`
+      + `<div class="mm-divider"></div>`
+      + `<button class="mm-btn danger" onclick="doLogout()">🚪 로그아웃</button>`;
     loadConversations();
     loadFriends();
     connectWebSocket();
@@ -440,6 +475,18 @@ fetch('/api/auth/mypage', { headers: { 'JWT_TOKEN': token } })
 
 // URL 파라미터로 특정 대화방 자동 열기 (?conv=123)
 const urlConvIdx = new URLSearchParams(location.search).get('conv');
+
+function toggleMobileMenu() {
+  document.getElementById('hamburgerBtn').classList.toggle('open');
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const menu = document.getElementById('mobileMenu');
+  const btn = document.getElementById('hamburgerBtn');
+  if (menu && !menu.contains(e.target) && btn && !btn.contains(e.target)) {
+    menu.classList.remove('open'); btn.classList.remove('open');
+  }
+});
 
 function closeMobileChat() {
   const chatEl = document.getElementById('msgChat');

@@ -812,9 +812,49 @@
       .hero-inner{ grid-template-columns: 1fr; gap: 28px; }
       .hero-stat-stack{ grid-template-columns: 1fr 1fr; }
     }
+    /* 햄버거 메뉴 */
+    .hamburger-btn{
+      display: none; flex-direction: column; gap: 5px;
+      padding: 9px 10px; cursor: pointer;
+      background: var(--surface-2); border: 1.5px solid var(--line);
+      border-radius: 10px; transition: border-color .15s;
+    }
+    .hamburger-btn:hover{ border-color: var(--accent); }
+    .hamburger-btn span{
+      display: block; width: 20px; height: 2px;
+      background: var(--ink-2); border-radius: 2px; transition: all .22s;
+    }
+    .hamburger-btn.open span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+    .hamburger-btn.open span:nth-child(2){ opacity: 0; transform: scaleX(0); }
+    .hamburger-btn.open span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+    .mobile-menu{
+      display: none;
+      position: fixed; top: 74px; left: 12px; right: 12px;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius-lg); padding: 8px;
+      z-index: 29; box-shadow: var(--shadow-3);
+      animation: mmIn .18s cubic-bezier(.2,.7,.2,1);
+    }
+    .mobile-menu.open{ display: block; }
+    @keyframes mmIn{ from{ opacity:0; transform:translateY(-8px); } to{ opacity:1; transform:translateY(0); } }
+    .mobile-menu a, .mobile-menu .mm-btn{
+      display: flex; align-items: center; gap: 10px;
+      padding: 13px 16px; border-radius: 10px;
+      font-size: 14.5px; font-weight: 600; color: var(--ink-2);
+      text-decoration: none; background: none; border: none;
+      width: 100%; cursor: pointer; font-family: var(--font-kr);
+      transition: background .12s, color .12s; text-align: left;
+    }
+    .mobile-menu a:hover, .mobile-menu .mm-btn:hover{ background: var(--surface-2); color: var(--accent); }
+    .mobile-menu a.mm-active{ background: color-mix(in oklab, var(--accent) 10%, white); color: var(--accent); }
+    .mm-divider{ height: 1px; background: var(--line); margin: 4px 8px; }
+    .mm-btn.danger{ color: var(--warn); }
+    .mm-btn.danger:hover{ background: color-mix(in oklab, var(--warn) 10%, white); color: var(--warn); }
+
     @media (max-width: 720px){
       .navbar{ margin: 10px 12px 0; padding: 8px 10px 8px 16px; }
-      .navbar-menu a:not(:last-child):not(.btn-primary-sm){ display: none; }
+      .hamburger-btn{ display: flex; }
+      .navbar-menu{ display: none !important; }
       .hero{ padding: 48px 16px 24px; }
       .hero-title{ font-size: 38px; }
       .hero-sub{ font-size: 15px; }
@@ -848,7 +888,11 @@
   <div class="navbar-menu" id="navMenu">
     <a href="/view/meetings">모임 탐색</a>
   </div>
+  <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()" aria-label="메뉴">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<div class="mobile-menu" id="mobileMenu"></div>
 
 <!-- 히어로 -->
 <div class="hero">
@@ -976,22 +1020,55 @@
   // 네비게이션 로그인 상태 반영
   const token = localStorage.getItem('JWT_TOKEN');
   const navMenu = document.getElementById('navMenu');
+  const mobileMenu = document.getElementById('mobileMenu');
+
   if (token) {
     const payload = JSON.parse(atob(token.split('.')[1]));
     const isAdmin = payload.roles && payload.roles.includes('ROLE_ADMIN');
+    // 데스크탑 메뉴
     navMenu.innerHTML += (isAdmin ? `<a href="/view/admin">관리자</a>` : '')
       + `<a href="/view/messages" id="navMsgLink" style="position:relative">💬 메시지<span id="navUnreadBadge" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--warn);"></span></a>`
       + `<a href="/view/mypage">마이페이지</a>
       <button class="btn-primary-sm" onclick="logout()">로그아웃</button>`;
+    // 모바일 메뉴
+    mobileMenu.innerHTML =
+      `<a href="/view/meetings" class="mm-active">🏠 모임 탐색</a>`
+      + (isAdmin ? `<a href="/view/admin">🛡 관리자 페이지</a>` : '')
+      + `<a href="/view/messages" id="mmMsgLink">💬 메시지</a>`
+      + `<a href="/view/mypage">👤 마이페이지</a>`
+      + `<div class="mm-divider"></div>`
+      + `<button class="mm-btn danger" onclick="logout()">🚪 로그아웃</button>`;
     // 미읽은 메시지 뱃지
     fetch('/api/messages/unread-count', { headers: { 'JWT_TOKEN': token } })
       .then(r => r.json())
-      .then(data => { if (data.count > 0) document.getElementById('navUnreadBadge').style.display = 'block'; })
+      .then(data => {
+        if (data.count > 0) {
+          document.getElementById('navUnreadBadge').style.display = 'block';
+          const mmLink = document.getElementById('mmMsgLink');
+          if (mmLink) mmLink.innerHTML = `💬 메시지 <span style="background:var(--warn);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;margin-left:4px">${data.count}</span>`;
+        }
+      })
       .catch(() => {});
   } else {
     navMenu.innerHTML += `<a href="/view/login">로그인</a>
       <a href="/view/signup" class="btn-primary-sm">회원가입</a>`;
+    mobileMenu.innerHTML =
+      `<a href="/view/login">🔑 로그인</a>`
+      + `<a href="/view/signup">✍️ 회원가입</a>`;
   }
+
+  function toggleMobileMenu() {
+    document.getElementById('hamburgerBtn').classList.toggle('open');
+    document.getElementById('mobileMenu').classList.toggle('open');
+  }
+  document.addEventListener('click', e => {
+    const menu = document.getElementById('mobileMenu');
+    const btn = document.getElementById('hamburgerBtn');
+    if (menu && !menu.contains(e.target) && btn && !btn.contains(e.target)) {
+      menu.classList.remove('open');
+      btn.classList.remove('open');
+    }
+  });
   function logout() { localStorage.removeItem('JWT_TOKEN'); document.cookie = 'JWT_TOKEN=; path=/; max-age=0'; location.reload(); }
   function goWrite() {
     if (!token) { showToast('로그인이 필요합니다.', 'error'); setTimeout(() => location.href='/view/login', 800); return; }
