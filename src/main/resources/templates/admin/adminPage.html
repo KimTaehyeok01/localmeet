@@ -297,16 +297,21 @@
 
     @media (max-width: 900px){
       .admin-wrap{ padding: 20px 16px 44px; }
-      .page-title{ font-size: 32px; }
-      .stat-row{ flex-direction: column; }
+      .page-title{ font-size: 28px; }
+      .stat-row{ flex-direction: column; gap: 10px; }
+    }
+    @media (max-width: 600px){
+      .navbar{ width: calc(100% - 20px); margin-top: 10px; padding: 8px 10px 8px 16px; }
+      .navbar-menu a:not(:last-child){ display: none; }
+      .admin-wrap{ padding: 14px 12px 44px; }
+      .page-title{ font-size: 24px; }
+      .panel-card{ border-radius: 14px; }
+      table{ font-size: 12px; }
+      table th, table td{ padding: 8px 10px; }
+      .section-title{ font-size: 20px; }
     }
     @media (max-width: 480px){
-      .navbar{
-        width: calc(100% - 20px);
-        margin-top: 10px;
-        padding: 8px 10px 8px 16px;
-      }
-      .navbar-menu a{ display: none; }
+      table{ display: block; overflow-x: auto; white-space: nowrap; }
     }
   </style>
 </head>

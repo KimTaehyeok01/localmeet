@@ -300,10 +300,35 @@
     /* ── 반응형 ── */
     @media (max-width: 1100px) { .friend-sidebar { display: none; } }
     @media (max-width: 760px) {
-      .msg-wrapper { grid-template-columns: 1fr; padding: 0 12px; }
+      .navbar { width: calc(100% - 20px); margin-top: 10px; padding: 8px 10px 8px 16px; }
+      .navbar-menu a:not(.active):not(.btn-primary-sm) { display: none; }
+      .msg-wrapper { grid-template-columns: 1fr; padding: 0 10px; margin: 10px auto 10px; gap: 0; }
+      .msg-sidebar { border-radius: 16px; }
       .msg-chat { display: none; }
-      .msg-chat.mobile-open { display: flex; position: fixed; inset: 0; z-index: 40; border-radius: 0; }
+      .msg-chat.mobile-open {
+        display: flex;
+        position: fixed; inset: 0; z-index: 40;
+        border-radius: 0;
+      }
+      .chat-header { padding: 14px 16px; }
+      .chat-messages { padding: 16px 14px 10px; }
+      .chat-input-area { padding: 10px 14px; }
     }
+    @media (max-width: 400px) {
+      .sidebar-header { padding: 16px 14px 10px; }
+      .conv-item { padding: 11px 12px; }
+      .conv-avatar { width: 38px; height: 38px; }
+    }
+
+    /* 모바일 뒤로가기 버튼 */
+    .mobile-back-btn {
+      display: none;
+      align-items: center; gap: 6px;
+      background: none; border: none;
+      color: var(--accent); font-size: 14px; font-weight: 700;
+      cursor: pointer; padding: 0; font-family: var(--font-kr);
+    }
+    @media (max-width: 760px) { .mobile-back-btn { display: flex; } }
   </style>
 </head>
 <body>
@@ -416,6 +441,13 @@ fetch('/api/auth/mypage', { headers: { 'JWT_TOKEN': token } })
 // URL 파라미터로 특정 대화방 자동 열기 (?conv=123)
 const urlConvIdx = new URLSearchParams(location.search).get('conv');
 
+function closeMobileChat() {
+  const chatEl = document.getElementById('msgChat');
+  chatEl.classList.remove('mobile-open');
+  activeConvIdx = null;
+  document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
+}
+
 function doLogout() {
   localStorage.removeItem('JWT_TOKEN');
   document.cookie = 'JWT_TOKEN=; path=/; max-age=0';
@@ -502,8 +534,10 @@ function openConversation(convIdx, partnerNickname, partnerUserIdx) {
 
   // 헤더 + 채팅창 렌더
   const chatEl = document.getElementById('msgChat');
+  chatEl.classList.add('mobile-open');
   chatEl.innerHTML = `
     <div class="chat-header">
+      <button class="mobile-back-btn" onclick="closeMobileChat()">← 뒤로</button>
       <div class="chat-header-avatar" style="background:${avatarColor(partnerUserIdx)}">
         ${avatarInitial(partnerNickname)}
       </div>

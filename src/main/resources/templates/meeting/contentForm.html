@@ -476,16 +476,29 @@
     }
 
     @media (max-width: 760px){
-      .detail-hero{ margin: 14px 16px 0; padding: 22px 20px; }
-      .page-body{ padding: 14px 16px 46px; }
-      .action-card{ flex-direction: column; }
+      .navbar{ width: calc(100% - 24px); margin-top: 10px; padding: 8px 10px 8px 16px; }
+      .navbar-menu a:not(:last-child):not([onclick]),.navbar-menu button:not([onclick*="Logout"]):not([onclick*="logout"])
+        { display: none; }
+      .detail-hero{ margin: 10px 12px 0; padding: 20px 18px 20px; border-radius: 22px; }
+      .hero-title{ font-size: clamp(22px, 5vw, 32px); }
+      .hero-meta{ gap: 8px 12px; }
+      .hero-meta-item{ font-size: 12px; }
+      .page-body{ padding: 12px 12px 46px; gap: 10px; }
+      .action-card{ flex-direction: column; padding: 10px; gap: 8px; }
+      .btn-join,.btn-cancel,.btn-cancel-approved,.btn-edit,.btn-delete{ padding: 11px 14px; font-size: 13px; }
+      .chat-box{ height: 260px; padding: 14px 14px; }
+      .chat-input-area{ padding: 10px 14px; gap: 6px; }
+      .chat-input-area input{ padding: 9px 12px; font-size: 13px; }
+      .member-list{ padding: 14px 14px; gap: 8px; }
+      .member-chip{ font-size: 12px; padding: 6px 11px; }
+      .section-card-header{ padding: 12px 16px; font-size: 10px; }
+      .content-body{ padding: 16px 16px; font-size: 14px; }
     }
-    @media (max-width: 480px){
-      .navbar{
-        width: calc(100% - 20px);
-        margin-top: 10px;
-        padding: 8px 10px 8px 16px;
-      }
+    @media (max-width: 400px){
+      .hero-title{ font-size: 20px; }
+      .detail-hero{ padding: 16px 14px; }
+      .chat-row{ gap: 6px; }
+      .msg-bubble{ padding: 8px 11px; font-size: 13px; }
     }
   </style>
 </head>
