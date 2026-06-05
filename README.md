@@ -39,6 +39,10 @@ https://localmeet.co.kr
 - **1:1 다이렉트 메시지(DM)** 기능으로 친구와 실시간 채팅할 수 있다.
 - 새 메시지 수신 시 **인앱 알림 카드 + 알림음 + 진동**으로 즉시 알려준다. (SSE 기반)
 - 마이페이지에서 **프로필 사진**을 업로드하거나 기본 이미지로 초기화할 수 있다.
+- 마이페이지에서 **내가 만든 모임 · 참가한 모임**을 참가 상태(대기중/확정)와 함께 모아볼 수 있다.
+- 마이페이지에서 **친구 목록을 확인**하고, **받은 친구 요청을 수락·거절**할 수 있다.
+- 받은 알림(참가 신청·친구 요청·DM)을 **알림 내역**으로 모아 보고, 안 읽은 알림 수를 뱃지로 확인할 수 있다.
+- 마이페이지에서 **닉네임·비밀번호·동네 정보를 직접 수정**할 수 있다.
 - 모임장은 참가 신청을 승인/거절하고, 모임 상태를 관리할 수 있다.
 - 카카오, 네이버 소셜 로그인을 지원한다.
 - **HTTPS 보안 접속** 및 **모바일·태블릿 반응형 UI**를 지원한다.
@@ -133,10 +137,15 @@ https://localmeet.co.kr
   - **Web Audio API** 짧은 종소리 + **모바일 진동**
   - 백그라운드 탭에서는 **브라우저 네이티브 알림** 자동 호출
 
-#### 6단계 — 마이페이지 프로필 관리
+#### 6단계 — 마이페이지 (나의 활동 허브)
 - 마이페이지의 아바타 이미지를 클릭하면 **프로필 사진을 업로드**할 수 있습니다. (5MB 이하 이미지)
-- 이미 사진이 있는 경우 **기본 이모지로 초기화**하는 옵션도 제공됩니다.
-- 업로드된 프로필 사진은 채팅 아바타에도 동일하게 반영됩니다.
+- 이미 사진이 있는 경우 **기본 이모지로 초기화**하는 옵션도 제공되며, 업로드된 사진은 채팅 아바타에도 동일하게 반영됩니다.
+- 프로필 카드에 **개설한 모임 · 참가한 모임 · 친구 수**가 활동 통계 배지로 표시됩니다.
+- **탭 UI**로 마이페이지를 활동 허브처럼 구성했습니다.
+  - **📋 내 모임** — `만든 모임` / `참가한 모임` 서브탭. 참가한 모임은 **대기중 / 확정** 상태를 칩으로 구분해 보여줍니다.
+  - **👥 친구** — `친구 목록`에서 바로 1:1 메시지로 이동할 수 있고, `받은 요청`에서 친구 요청을 **수락 · 거절**할 수 있습니다. 대기 중인 요청 수는 탭 뱃지로 표시됩니다.
+  - **🔔 알림** — 받은 알림(참가 신청·친구 요청/수락·DM)이 **DB에 저장**되어 지난 알림까지 모아볼 수 있습니다. 안 읽은 알림 수 뱃지, `모두 읽음` 처리, 클릭 시 해당 페이지로 이동을 지원합니다.
+- **⚙️ 내 정보 수정** 모달에서 **닉네임(실시간 중복 검사)** · **비밀번호(현재 비밀번호 검증)** · **동네**를 변경할 수 있습니다. (동네 변경 시 기존 좌표는 보존)
 
 ---
 
@@ -241,12 +250,12 @@ src/main/java/com/study/localmeet/
 │   └── QueryDslConfig.java           # QueryDSL JPAQueryFactory 빈 등록
 │
 ├── controller/                       # 컨트롤러
-│   ├── AuthController.java           # 회원가입 / 로그인 / 마이페이지 / 프로필 사진
-│   ├── MeetingController.java        # 모임 CRUD / 참가 신청·승인·취소 / 참가자 목록
+│   ├── AuthController.java           # 회원가입 / 로그인 / 마이페이지 / 프로필 사진 / 닉네임·비번·동네 수정
+│   ├── MeetingController.java        # 모임 CRUD / 참가 신청·승인·취소 / 참가자 목록 / 내 모임(만든·참가) 조회
 │   ├── ChatController.java           # WebSocket 채팅 메시지 수신·브로드캐스트
 │   ├── MessengerController.java      # DM 대화방 / 메시지 / WebSocket DM
-│   ├── FriendController.java         # 친구 요청·수락·목록 조회
-│   ├── NotificationController.java   # SSE 알림 구독
+│   ├── FriendController.java         # 친구 요청·수락·거절 / 친구·받은요청 목록 조회
+│   ├── NotificationController.java   # SSE 알림 구독 / 알림 내역 조회·읽음 처리
 │   ├── AdminController.java          # 관리자 (회원·모임 관리)
 │   └── ViewController.java           # 뷰 라우팅
 │
@@ -270,9 +279,12 @@ src/main/java/com/study/localmeet/
 │   │   ├── ConversationRepository.java
 │   │   ├── ConversationMemberRepository.java
 │   │   └── DirectMessageRepository.java
-│   └── friend/                       # 친구 관계
-│       ├── Friendship.java
-│       └── FriendshipRepository.java
+│   ├── friend/                       # 친구 관계
+│   │   ├── Friendship.java
+│   │   └── FriendshipRepository.java
+│   └── notification/                 # 알림 내역
+│       ├── Notification.java         # 알림 영속화 (MEETING / DM / FRIEND / GENERAL)
+│       └── NotificationRepository.java
 │
 ├── dto/                              # DTO
 │   ├── auth/
@@ -281,9 +293,11 @@ src/main/java/com/study/localmeet/
 │   │   ├── MeetingSaveRequestDto.java
 │   │   └── MeetingMemberDto.java      # 참가자 목록 응답 DTO
 │   ├── chat/
-│   └── dm/
-│       ├── ConversationDto.java       # 대화 목록 응답 DTO
-│       └── DirectMessageDto.java      # DM 메시지 응답 DTO
+│   ├── dm/
+│   │   ├── ConversationDto.java       # 대화 목록 응답 DTO
+│   │   └── DirectMessageDto.java      # DM 메시지 응답 DTO
+│   └── notification/
+│       └── NotificationDto.java       # 알림 내역 응답 DTO
 │
 ├── client/
 │   └── FastApiClient.java            # FastAPI 호출 클라이언트 (욕설감지 / 날씨추천)
@@ -298,14 +312,14 @@ src/main/java/com/study/localmeet/
     ├── MeetingService.java
     ├── ChatService.java
     ├── MessengerService.java         # DM 대화방 / 메시지 / 유저 검색
-    ├── FriendService.java            # 친구 요청·수락·목록 조회
-    ├── NotificationService.java
+    ├── FriendService.java            # 친구 요청·수락·거절·목록 조회 (+ 친구 알림 발행)
+    ├── NotificationService.java      # SSE 푸시 + 알림 내역 영속화·조회·읽음 처리
     ├── AdminService.java
     └── CustomOAuth2UserService.java
 
 src/main/resources/
 ├── templates/
-│   ├── auth/                         # 로그인 / 회원가입 / 마이페이지 (프로필 사진)
+│   ├── auth/                         # 로그인 / 회원가입 / 마이페이지 (탭·활동통계·알림내역·정보수정)
 │   ├── meeting/                      # 모임 목록 / 상세 (카카오톡 채팅) / 등록 / 수정
 │   ├── messenger/                    # 1:1 메신저 페이지
 │   └── admin/                        # 관리자 페이지
@@ -404,12 +418,23 @@ erDiagram
         DATETIME created_at
     }
 
+    NOTIFICATION {
+        BIGINT noti_idx PK
+        BIGINT user_idx FK
+        VARCHAR noti_type
+        VARCHAR noti_content
+        VARCHAR noti_link
+        TINYINT is_read
+        DATETIME created_at
+    }
+
     USERS ||--o{ MEETING : "작성"
     USERS ||--o{ MEETING_MEMBER : "참가 신청"
     USERS ||--o{ CHAT_MESSAGE : "전송"
     USERS ||--o{ FRIENDSHIP : "친구 요청"
     USERS ||--o{ CONVERSATION_MEMBER : "대화 참여"
     USERS ||--o{ DIRECT_MESSAGE : "DM 전송"
+    USERS ||--o{ NOTIFICATION : "알림 수신"
     MEETING ||--o{ MEETING_MEMBER : "포함"
     MEETING ||--o{ CHAT_MESSAGE : "포함"
     CONVERSATION ||--o{ CONVERSATION_MEMBER : "포함"
@@ -462,6 +487,11 @@ HTTP(비HTTPS) 환경에서 Geolocation이 차단되는 경우 서울 기본 좌
 DM 전송 시 `NotificationService`가 수신자 SSE 연결을 통해 `event: dm` 이벤트를 전송하고,
 프론트엔드는 공통 `dm-notify.js`에서 **인앱 카드 + Web Audio 알림음 + Vibration API + Notification API**를
 조합해 즉각적인 피드백을 제공합니다. 페이지 전환 후에도 SSE 자동 재연결로 끊김 없는 알림이 유지됩니다.
+
+**알림 내역 영속화 & 마이페이지 활동 허브**  
+기존 SSE 알림은 실시간 푸시만 가능해 접속하지 않은 사이의 알림이 사라지는 한계가 있었습니다.  
+`notification` 테이블을 도입해 참가 신청·친구 요청/수락·DM 알림을 **DB에 영속화**하고, `NotificationService`가 SSE 푸시와 저장을 함께 수행하도록 개선했습니다.  
+마이페이지는 단순 조회 화면에서 벗어나, 내 모임(만든·참가)·친구·알림 내역을 한곳에 모은 **탭 기반 활동 허브**로 재구성했습니다. 알림 저장은 `try-catch`로 감싸 실패하더라도 본래 기능(참가 신청·DM 등)에는 영향을 주지 않도록 했습니다.
 
 **HTTPS 보안 통신 (Nginx + Let's Encrypt)**  
 도메인 `localmeet.co.kr` 을 통한 HTTPS 접속을 지원합니다.  
@@ -634,7 +664,10 @@ JAR 파일 + fastapi/ 폴더 전송
 | WebSocket 실시간 채팅 (카카오톡 스타일) |
 | 1:1 다이렉트 메시지 (DM) |
 | SSE 기반 실시간 푸시 알림 (인앱 카드 + 알림음 + 진동) |
-| 친구 추가 / 수락 / 목록 조회 |
+| 친구 추가 / 수락 / 거절 / 목록 조회 |
+| 마이페이지 활동 허브 (내 모임·친구·알림 내역·활동 통계) |
+| 회원 정보 수정 (닉네임·비밀번호·동네) |
+| 알림 내역 영속화 (참가·친구·DM 알림 저장·조회) |
 | 프로필 사진 업로드 및 초기화 |
 | SSE 실시간 알림 |
 | HTTPS 보안 통신 (Nginx + Let's Encrypt) |
