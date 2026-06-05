@@ -101,6 +101,23 @@ jobs:
           echo "--- MySQL 상태 ---"; systemctl is-active mysql 2>/dev/null || systemctl is-active mysqld 2>/dev/null || echo "확인불가"
           echo "====================================="
 
+          echo "===== [진단] 디스크 용량 차지 TOP ====="
+          echo "--- 홈 디렉토리 ---"; du -sh ~/* 2>/dev/null | sort -hr | head -10
+          echo "--- 시스템 주요 위치 ---"; sudo -n du -sh /var/log /var/lib/mysql /var/cache /tmp 2>/dev/null | sort -hr || du -sh /var/log /var/cache /tmp 2>/dev/null | sort -hr || true
+
+          echo "===== [정리] 디스크 안전 정리 ====="
+          # 최신 1개 제외한 오래된 jar 삭제
+          ls -t ~/localmeet/*.jar 2>/dev/null | tail -n +2 | xargs -r rm -f && echo "오래된 jar 정리 완료"
+          # 로그/캐시 정리
+          : > ~/localmeet/app.log 2>/dev/null || true
+          rm -f ~/localmeet/nohup.out 2>/dev/null || true
+          rm -rf ~/.cache/* ~/.gradle 2>/dev/null || true
+          # sudo 가능 시 시스템 캐시/저널 정리
+          sudo -n apt-get clean 2>/dev/null && echo "apt clean 완료" || echo "apt clean 건너뜀(sudo 불가)"
+          sudo -n journalctl --vacuum-size=50M 2>/dev/null && echo "journal vacuum 완료" || echo "journal vacuum 건너뜀(sudo 불가)"
+          echo "--- 정리 후 디스크 ---"; df -h /
+          echo "====================================="
+
           # 기존 Java 프로세스 종료 (방식 무관하게 전부 종료)
           pkill -f "java.*jar" 2>/dev/null || true
           sleep 3
