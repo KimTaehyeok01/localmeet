@@ -93,12 +93,49 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/nickname")
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    public ResponseEntity<Map<String, Object>> updateNickname(
+            @RequestParam String userNickname,
+            Authentication authentication) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        try {
+            authService.updateNickname(authentication.getName(), userNickname);
+            result.put("success", true);
+            result.put("message", "닉네임이 변경되었습니다.");
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
+    @PostMapping("/password")
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    public ResponseEntity<Map<String, Object>> updatePassword(
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword,
+            Authentication authentication) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        try {
+            authService.updatePassword(authentication.getName(), currentPassword, newPassword);
+            result.put("success", true);
+            result.put("message", "비밀번호가 변경되었습니다.");
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
     @PostMapping("/address")
     @Secured({"ROLE_USER", "ROLE_ADMIN"})
     public ResponseEntity<Map<String, Object>> updateAddress(
             @RequestParam String userAddress,
-            @RequestParam(required = false, defaultValue = "0.0") Double userLat,
-            @RequestParam(required = false, defaultValue = "0.0") Double userLng,
+            @RequestParam(required = false) Double userLat,
+            @RequestParam(required = false) Double userLng,
             Authentication authentication) {
         Map<String, Object> result = new LinkedHashMap<>();
         authService.updateAddress(authentication.getName(), userAddress, userLat, userLng);

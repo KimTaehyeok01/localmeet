@@ -75,4 +75,14 @@ public class Users {
     public void updateProfileImg(String profileImg) {
         this.profileImg = profileImg;
     }
+
+    // 닉네임만 수정
+    public void updateNickname(String userNickname) {
+        this.userNickname = userNickname;
+    }
+
+    // 비밀번호 수정 (암호화된 값 전달)
+    public void updatePassword(String encodedPassword) {
+        this.userPassword = encodedPassword;
+    }
 }

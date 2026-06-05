@@ -93,7 +93,44 @@ public class AuthService {
     public void updateAddress(String userEmail, String userAddress, Double userLat, Double userLng) {
         Users users = usersRepository.findByUserEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
-        users.update(users.getUserNickname(), userAddress, userLat, userLng);
+        // 좌표가 전달되지 않으면(텍스트만 변경) 기존 좌표 유지
+        Double lat = (userLat != null && userLat != 0.0) ? userLat : users.getUserLat();
+        Double lng = (userLng != null && userLng != 0.0) ? userLng : users.getUserLng();
+        users.update(users.getUserNickname(), userAddress, lat, lng);
+    }
+
+    // 닉네임 변경
+    @Transactional
+    public void updateNickname(String userEmail, String newNickname) {
+        if (newNickname == null || newNickname.trim().isEmpty()) {
+            throw new IllegalArgumentException("닉네임을 입력해주세요.");
+        }
+        newNickname = newNickname.trim();
+        if (newNickname.length() > 50) {
+            throw new IllegalArgumentException("닉네임은 50자 이하여야 합니다.");
+        }
+        Users users = usersRepository.findByUserEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+        // 본인 닉네임 그대로면 통과, 아니면 중복 체크
+        if (!newNickname.equals(users.getUserNickname())
+                && usersRepository.existsByUserNickname(newNickname)) {
+            throw new IllegalArgumentException("이미 사용중인 닉네임입니다.");
+        }
+        users.updateNickname(newNickname);
+    }
+
+    // 비밀번호 변경
+    @Transactional
+    public void updatePassword(String userEmail, String currentPassword, String newPassword) {
+        if (newPassword == null || newPassword.length() < 4) {
+            throw new IllegalArgumentException("새 비밀번호는 4자 이상이어야 합니다.");
+        }
+        Users users = usersRepository.findByUserEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+        if (!passwordEncoder.matches(currentPassword, users.getUserPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+        users.updatePassword(passwordEncoder.encode(newPassword));
     }
 
     // 프로필 이미지 업로드
