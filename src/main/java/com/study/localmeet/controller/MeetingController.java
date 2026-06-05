@@ -99,7 +99,9 @@ public class MeetingController {
             MeetingResponseDto meetingDto = meetingService.findById(meetingIdx);
             notificationService.sendNotification(
                     meetingDto.getUserEmail(),
-                    "[" + meetingDto.getMeetingTitle() + "] 새로운 참가 신청이 있습니다."
+                    "[" + meetingDto.getMeetingTitle() + "] 새로운 참가 신청이 있습니다.",
+                    "MEETING",
+                    "/view/meetings/" + meetingIdx
             );
 
             result.put("success", true);
@@ -115,6 +117,20 @@ public class MeetingController {
     @GetMapping("/{meetingIdx}/members")
     public ResponseEntity<List<MeetingMemberDto>> getMembers(@PathVariable Long meetingIdx) {
         return ResponseEntity.ok(meetingService.getMembers(meetingIdx));
+    }
+
+    // 마이페이지 - 내가 만든 모임
+    @GetMapping("/my/created")
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    public List<MeetingResponseDto> myCreated(Authentication authentication) {
+        return meetingService.findMyCreated(authentication.getName());
+    }
+
+    // 마이페이지 - 내가 참가 신청한 모임 (상태 포함)
+    @GetMapping("/my/joined")
+    @Secured({"ROLE_USER", "ROLE_ADMIN"})
+    public List<MeetingResponseDto> myJoined(Authentication authentication) {
+        return meetingService.findMyJoined(authentication.getName());
     }
 
     @GetMapping("/{meetingIdx}/my-status")

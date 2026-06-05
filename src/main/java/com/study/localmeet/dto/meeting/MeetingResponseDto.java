@@ -29,6 +29,9 @@ public class MeetingResponseDto {
     // 현재 참가 인원
     private int currentCount;
 
+    // 내 참가 상태 (NONE / PENDING / APPROVED) - 마이페이지 "참가한 모임"에서만 사용
+    private String myStatus;
+
     // Entity -> DTO 변환
     public MeetingResponseDto(Meeting entity) {
         this.meetingIdx = entity.getMeetingIdx();
@@ -48,5 +51,9 @@ public class MeetingResponseDto {
 
     public void setCurrentCount(int currentCount) {
         this.currentCount = currentCount;
+    }
+
+    public void setMyStatus(String myStatus) {
+        this.myStatus = myStatus;
     }
 }

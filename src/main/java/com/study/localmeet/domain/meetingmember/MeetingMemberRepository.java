@@ -22,6 +22,11 @@ public interface MeetingMemberRepository extends JpaRepository<MeetingMember, Lo
 
     List<MeetingMember> findAllByUsers_UserIdxAndIsApproved(Long userIdx, Boolean isApproved);
 
+    // 내가 참가 신청한 모든 내역 (최신순)
+    List<MeetingMember> findAllByUsers_UserIdxOrderByJoinedAtDesc(Long userIdx);
+
+    int countByUsers_UserIdx(Long userIdx);
+
     void deleteAllByUsers_UserIdx(Long userIdx);
 
     boolean existsByMeeting_MeetingIdxAndUsers_UserEmailAndIsApproved(

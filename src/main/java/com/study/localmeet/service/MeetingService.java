@@ -174,6 +174,37 @@ public class MeetingService {
         }).collect(Collectors.toList());
     }
 
+    // 내가 만든 모임 목록
+    @Transactional(readOnly = true)
+    public List<MeetingResponseDto> findMyCreated(String userEmail) {
+        Users users = usersRepository.findByUserEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+        Map<Long, Integer> countMap = buildCountMap();
+        return meetingRepository.findAllByUsers_UserIdxOrderByCreatedAtDesc(users.getUserIdx())
+                .stream().map(meeting -> {
+                    MeetingResponseDto dto = new MeetingResponseDto(meeting);
+                    dto.setCurrentCount(countMap.getOrDefault(meeting.getMeetingIdx(), 0));
+                    return dto;
+                }).collect(Collectors.toList());
+    }
+
+    // 내가 참가 신청한 모임 목록 (참가 상태 포함)
+    @Transactional(readOnly = true)
+    public List<MeetingResponseDto> findMyJoined(String userEmail) {
+        Users users = usersRepository.findByUserEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+        Map<Long, Integer> countMap = buildCountMap();
+        return meetingMemberRepository.findAllByUsers_UserIdxOrderByJoinedAtDesc(users.getUserIdx())
+                .stream()
+                .filter(mm -> mm.getMeeting() != null)
+                .map(mm -> {
+                    MeetingResponseDto dto = new MeetingResponseDto(mm.getMeeting());
+                    dto.setCurrentCount(countMap.getOrDefault(mm.getMeeting().getMeetingIdx(), 0));
+                    dto.setMyStatus(Boolean.TRUE.equals(mm.getIsApproved()) ? "APPROVED" : "PENDING");
+                    return dto;
+                }).collect(Collectors.toList());
+    }
+
     @Transactional(readOnly = true)
     public List<MeetingMemberDto> getMembers(Long meetingIdx) {
         return meetingMemberRepository.findAllByMeeting_MeetingIdx(meetingIdx)
