@@ -91,32 +91,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key.pem -o StrictHostKeyChecking=no \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} bash -s << 'ENDSSH'
-          cd ~/localmeet || { echo "[진단] cd ~/localmeet 실패 (폴더 없음)"; exit 1; }
-
-          echo "===== [진단] 배포 전 시스템 상태 ====="
-          echo "--- 메모리(MB) ---"; free -m
-          echo "--- 디스크 ---"; df -h /
-          echo "--- jar 파일 ---"; ls -lah *.jar 2>&1
-          echo "--- java 버전 ---"; java -version 2>&1
-          echo "--- MySQL 상태 ---"; systemctl is-active mysql 2>/dev/null || systemctl is-active mysqld 2>/dev/null || echo "확인불가"
-          echo "====================================="
-
-          echo "===== [진단] 디스크 용량 차지 TOP ====="
-          echo "--- 홈 디렉토리 ---"; du -sh ~/* 2>/dev/null | sort -hr | head -10
-          echo "--- 시스템 주요 위치 ---"; sudo -n du -sh /var/log /var/lib/mysql /var/cache /tmp 2>/dev/null | sort -hr || du -sh /var/log /var/cache /tmp 2>/dev/null | sort -hr || true
-
-          echo "===== [정리] 디스크 안전 정리 ====="
-          # 최신 1개 제외한 오래된 jar 삭제
-          ls -t ~/localmeet/*.jar 2>/dev/null | tail -n +2 | xargs -r rm -f && echo "오래된 jar 정리 완료"
-          # 로그/캐시 정리
-          : > ~/localmeet/app.log 2>/dev/null || true
-          rm -f ~/localmeet/nohup.out 2>/dev/null || true
-          rm -rf ~/.cache/* ~/.gradle 2>/dev/null || true
-          # sudo 가능 시 시스템 캐시/저널 정리
-          sudo -n apt-get clean 2>/dev/null && echo "apt clean 완료" || echo "apt clean 건너뜀(sudo 불가)"
-          sudo -n journalctl --vacuum-size=50M 2>/dev/null && echo "journal vacuum 완료" || echo "journal vacuum 건너뜀(sudo 불가)"
-          echo "--- 정리 후 디스크 ---"; df -h /
-          echo "====================================="
+          cd ~/localmeet
 
           # 기존 Java 프로세스 종료 (방식 무관하게 전부 종료)
           pkill -f "java.*jar" 2>/dev/null || true
@@ -124,17 +99,13 @@ jobs:
 
           nohup java -Xms128m -Xmx512m -Duser.timezone=Asia/Seoul -jar *.jar > app.log 2>&1 &
           echo $! > app.pid
-          sleep 15
+          sleep 10
 
           if kill -0 $(cat app.pid) 2>/dev/null; then
             echo "배포 성공 (PID: $(cat app.pid))"
           else
-            echo "===== [진단] 배포 실패 - app.log 전체 ====="
-            cat app.log 2>&1 || echo "(app.log 비어있음 또는 없음)"
-            echo "===== [진단] 커널 OOM/kill 메시지 ====="
-            dmesg 2>/dev/null | grep -iE "oom|out of memory|killed process" | tail -10 || echo "(dmesg 접근 불가 - sudo 필요할 수 있음)"
-            echo "===== [진단] 배포 실패 후 메모리(MB) ====="
-            free -m
+            echo "배포 실패 - 로그:"
+            tail -30 app.log
             exit 1
           fi
           ENDSSH
