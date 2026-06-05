@@ -127,6 +127,21 @@ CREATE TABLE direct_message (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ================================
+-- 9. 알림 내역 테이블
+-- ================================
+CREATE TABLE notification (
+    noti_idx     BIGINT       NOT NULL AUTO_INCREMENT,
+    user_idx     BIGINT       NOT NULL,
+    noti_type    VARCHAR(20)  NOT NULL DEFAULT 'GENERAL',
+    noti_content VARCHAR(255) NOT NULL,
+    noti_link    VARCHAR(255),
+    is_read      TINYINT(1)   NOT NULL DEFAULT 0,
+    created_at   DATETIME     NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (noti_idx),
+    FOREIGN KEY (user_idx) REFERENCES users(user_idx)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ================================
 -- 테스트 데이터
 -- ================================
 
