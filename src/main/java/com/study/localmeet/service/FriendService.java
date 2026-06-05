@@ -17,6 +17,7 @@ public class FriendService {
 
     private final FriendshipRepository friendshipRepository;
     private final UsersRepository usersRepository;
+    private final NotificationService notificationService;
 
     // 친구 요청 상태 조회 (NONE / PENDING_SENT / PENDING_RECEIVED / ACCEPTED)
     @Transactional(readOnly = true)
@@ -54,6 +55,12 @@ public class FriendService {
 
         friendshipRepository.save(Friendship.builder()
                 .requester(me).receiver(target).status("PENDING").build());
+
+        notificationService.sendNotification(
+                target.getUserEmail(),
+                me.getUserNickname() + "님이 친구 요청을 보냈습니다.",
+                "FRIEND", "/view/mypage");
+
         return target.getUserNickname() + "님에게 친구 요청을 보냈습니다.";
     }
 
@@ -68,7 +75,45 @@ public class FriendService {
             throw new IllegalArgumentException("수락 권한이 없습니다.");
         }
         f.accept();
+
+        notificationService.sendNotification(
+                f.getRequester().getUserEmail(),
+                me.getUserNickname() + "님이 친구 요청을 수락했습니다.",
+                "FRIEND", "/view/messages");
+
         return f.getRequester().getUserNickname() + "님과 친구가 되었습니다.";
+    }
+
+    // 친구 요청 거절 (요청 자체를 삭제)
+    @Transactional
+    public String rejectRequest(String myEmail, Long friendIdx) {
+        Friendship f = friendshipRepository.findById(friendIdx)
+                .orElseThrow(() -> new IllegalArgumentException("친구 요청을 찾을 수 없습니다."));
+        Users me = findUser(myEmail);
+
+        if (!f.getReceiver().getUserIdx().equals(me.getUserIdx())) {
+            throw new IllegalArgumentException("거절 권한이 없습니다.");
+        }
+        String nickname = f.getRequester().getUserNickname();
+        friendshipRepository.delete(f);
+        return nickname + "님의 친구 요청을 거절했습니다.";
+    }
+
+    // 내가 받은 친구 요청(대기중) 목록
+    @Transactional(readOnly = true)
+    public java.util.List<java.util.Map<String, Object>> getReceivedRequests(String myEmail) {
+        Users me = findUser(myEmail);
+        return friendshipRepository.findReceivedPending(me.getUserIdx()).stream()
+                .map(f -> {
+                    Users requester = f.getRequester();
+                    java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+                    m.put("friendIdx",    f.getFriendIdx());
+                    m.put("userIdx",      requester.getUserIdx());
+                    m.put("userNickname", requester.getUserNickname());
+                    m.put("profileImg",   requester.getProfileImg() != null ? requester.getProfileImg() : "");
+                    return m;
+                })
+                .collect(java.util.stream.Collectors.toList());
     }
 
     // 친구 목록 조회

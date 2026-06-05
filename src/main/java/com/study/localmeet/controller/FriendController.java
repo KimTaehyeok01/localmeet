@@ -43,6 +43,13 @@ public class FriendController {
         return ResponseEntity.ok(friendService.getMyFriends(auth.getName()));
     }
 
+    // 내가 받은 친구 요청(대기중) 목록
+    @GetMapping("/received")
+    public ResponseEntity<java.util.List<java.util.Map<String, Object>>> getReceived(Authentication auth) {
+        if (auth == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(friendService.getReceivedRequests(auth.getName()));
+    }
+
     // 친구 요청 수락
     @PostMapping("/accept/{friendIdx}")
     public ResponseEntity<Map<String, Object>> acceptRequest(@PathVariable Long friendIdx,
@@ -50,6 +57,19 @@ public class FriendController {
         if (auth == null) return ResponseEntity.status(401).build();
         try {
             String msg = friendService.acceptRequest(auth.getName(), friendIdx);
+            return ResponseEntity.ok(Map.of("success", true, "message", msg));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        }
+    }
+
+    // 친구 요청 거절
+    @PostMapping("/reject/{friendIdx}")
+    public ResponseEntity<Map<String, Object>> rejectRequest(@PathVariable Long friendIdx,
+                                                             Authentication auth) {
+        if (auth == null) return ResponseEntity.status(401).build();
+        try {
+            String msg = friendService.rejectRequest(auth.getName(), friendIdx);
             return ResponseEntity.ok(Map.of("success", true, "message", msg));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));

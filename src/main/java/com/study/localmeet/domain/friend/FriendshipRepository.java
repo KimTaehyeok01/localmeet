@@ -21,4 +21,15 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
            "(f.requester.userIdx = :userIdx OR f.receiver.userIdx = :userIdx) " +
            "AND f.status = 'ACCEPTED'")
     java.util.List<Friendship> findAcceptedFriends(@Param("userIdx") Long userIdx);
+
+    // 내가 받은 친구 요청(대기중) 목록 - 내가 receiver 이고 PENDING 인 것
+    @Query("SELECT f FROM Friendship f WHERE f.receiver.userIdx = :userIdx " +
+           "AND f.status = 'PENDING' ORDER BY f.createdAt DESC")
+    java.util.List<Friendship> findReceivedPending(@Param("userIdx") Long userIdx);
+
+    // 내 수락된 친구 수
+    @Query("SELECT COUNT(f) FROM Friendship f WHERE " +
+           "(f.requester.userIdx = :userIdx OR f.receiver.userIdx = :userIdx) " +
+           "AND f.status = 'ACCEPTED'")
+    long countAcceptedFriends(@Param("userIdx") Long userIdx);
 }
