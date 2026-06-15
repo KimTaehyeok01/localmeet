@@ -164,4 +164,5 @@ VALUES
     (1, 2, 1, NOW()),
     (2, 2, 0, NOW());
 
+
 UPDATE users SET user_role = 'ROLE_ADMIN' WHERE user_email = 'taehyeok1124@gmail.com';
