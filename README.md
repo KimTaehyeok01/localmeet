@@ -92,6 +92,12 @@ https://localmeet.co.kr
   <img src="https://img.shields.io/badge/Let's Encrypt-003A70?style=flat-square&logo=letsencrypt&logoColor=white"/>
 </p>
 
+### Collaboration
+<p>
+  <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Notion-000000?style=flat-square&logo=notion&logoColor=white"/>
+</p>
+
 ---
 
 ## ✨ 핵심 기능 (사용자 시나리오 중심)
